@@ -1,0 +1,366 @@
+---
+title: Stripes CRUD
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/0Nt8uWROmsrRJJ3I4QQC6G">stripes-crud source code</a><br/>					
+<a href="http://ubuntuone.com/3dNI3IYE2hHK3oXbvzlljW">stripes-crud war</a>
+</div>	
+<div class="sectionHeading">Introduction</div>
+<div class="section">It goes without saying that obviously you 
+have a ton of choices when it comes to what web framework you want to use when building a web application. The reason why I think frameworks like
+Rails became so popular so fast was due to the glut of Java frameworks that were simply trying to do
+too much or were overly complicated. I don't want a ton of XML configuration nor do I want to feel like I'm coding a Swing application. 
+ The bottom line is I really like <a href="http://mc4j.org/confluence/display/stripes/Home">Stripes</a> so far and I've at least dabbled in a lot of other Java web 
+frameworks (At the time of this writing, my other favorite is Grails.) 
+<br/><br/>
+As a tribute to Stripes, today (9/22/07), was my very first day even taking a serious look at the framework (Thanks Brandon for recommending I look at Stripes.). 
+I downloaded the example application and looked at the source code of 
+the "Bugzooky" example app and all I could say was "Wow, why I did I take so long to look at this framework??" Within an hour I was taking the old Struts CRUD app on this
+site and converting it to a Stripes application. Now be honest, how many other frameworks can you learn most all the basics of in less than hour? I guarantee you aren't going to be up and 
+running that quickly with anything somewhat serious (no HelloWorld) within an hour of looking at an example application from most of the other popular frameworks out there. 
+<br/><br/> 
+Since I am new to the framework and I want to get this example application up for others to look at, I'm not going to comment on the source 
+code below. Actually, the nice thing is I bet you can easily see what's going on without any comments! 
+<br/><br/>
+One of the things I find nice about the examples on this site is that they all use the same Employee CRUD example pages and page flow. This should give you a good 
+appreciation for how the different frameworks handle the same business requirement - simple CRUD operations. This example just uses a dummy in-memory persistence store. 
+I'll have the iBATIS and Spring intergration done in a followup lesson shortly. I'm not showing every file here - just 
+enough that you'll get a gist of what's going on. 
+</div>
+
+<div class="sectionHeading">The Setup</div>
+<div class="section">
+Download the source code using the link above. The source comes with an ant build file. The build uses Tomcat (if you want the war built and deployed) and will require an environment variable of CATALINA_HOME to be
+set. (I think the later versions might use TOMCAT_HOME so just fix the build file if that's the case.) To build and deploy just type "ant" (of course you need ant installed.)  Stripes
+also requires Java5 and Servlet spec 2.4/JSP2.0 (Tomcat5 or higher is fine). Once the war is deployed and tomcat is runinng, just go to the url <a href="http://localhost:8080/stripes-crud/">http://localhost:8080/stripes-crud/</a>.
+<br/><br/>
+You should see:<br/><br/>
+<img alt="employees" src="/img/employees.jpg" />
+ 
+
+
+<div class="sectionHeading">Employee</div>
+<div class="section">
+A simple POJO (there is also a Department POJO)
+<pre class="decorated"><code>
+public class Employee implements Serializable {
+    private Integer employeeId;
+    private Integer age;
+    private String firstName;
+    private String lastName;
+    private Department department;
+  
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Integer getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Integer employeeId) {
+        this.employeeId = employeeId;
+    }
+    ...
+</code></pre>
+</div>
+ 
+<div class="sectionHeading">EmployeeDaoService</div>
+<div class="section">
+<pre class="decorated"><code>
+public class EmployeeDaoService implements EmployeeService {
+    private EmployeeDao dao = new EmployeeNoDBdao();
+
+    public List&lt;Employee> getAllEmployees() {
+        return dao.getAllEmployees();
+    }
+
+    public void updateEmployee(Employee emp) {
+        dao.update(emp);
+    }
+
+    public void deleteEmployee(Integer id) {
+        dao.delete(id);
+    }
+
+    public Employee getEmployee(Integer id) {
+        return dao.getEmployee(id);
+    }
+
+    public void insertEmployee(Employee emp) {
+        dao.insert(emp);
+    }
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">EmployeeActionBean</div>
+<div class="section">
+The heart of the application. Later, in the jsp forms, you'll see something like: &lt;stripes:form action="/Employee.action">. 
+Stripes uses a naming convention that if it sees "Employee" it will map that to "EmloyeeActionBean.java." (If you had /FooBar.action, it 
+would map to FooBarActionBean.)
+<pre class="decorated"><code>
+public class EmployeeActionBean extends BaseActionBean {
+    private Log logger = LogFactory.getLog(this.getClass());
+    private final static String EMPLOYEES_DISPLAY = "/Employee.action?employees=";
+    private final static String EMPLOYEES = "/WEB-INF/jsp/employees.jsp";
+    private final static String EMPLOYEE_FORM = "/WEB-INF/jsp/employeeForm.jsp";
+
+    EmployeeService employeeService = new EmployeeDaoService();
+    DepartmentService departmentService = new DepartmentDaoService();
+    
+    @ValidateNestedProperties({
+        @Validate(field="firstName", required=true),
+        @Validate(field="lastName", required=true),
+        @Validate(field="age", required=true,converter=IntegerTypeConverter.class)
+    })
+    private Employee employee;
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    @DontValidate
+    @DefaultHandler
+    public Resolution employees() {
+        logger.debug("employees");
+        return new ForwardResolution(EMPLOYEES);
+    }
+
+    //sets up our form for editing or inserting an Employee
+    @DontValidate
+    public Resolution preEdit() {
+        if ( this.employee != null && this.employee.getEmployeeId() != null  ) {
+            //we're setting up for an update so populate Employee
+            this.employee = employeeService.getEmployee(this.employee.getEmployeeId());
+            logger.debug("employee = "+employee);
+        }   
+        return new ForwardResolution(EMPLOYEE_FORM);
+    }
+
+    public Resolution save() {
+        if ( this.employee.getEmployeeId() == null ) {
+            logger.debug("adding employee: "+employee );
+            employeeService.insertEmployee(employee);
+        } else {
+            logger.debug("updating employee: "+employee );
+            employeeService.updateEmployee(employee);
+        }
+        return new RedirectResolution(EMPLOYEES_DISPLAY);
+    }
+
+    @DontValidate
+    public Resolution delete() {
+        logger.debug("deleting employee "+employee );
+        employeeService.deleteEmployee(this.employee.getEmployeeId());
+        return new RedirectResolution(EMPLOYEES_DISPLAY);
+    }
+
+    @DontValidate
+    public Resolution cancel() {
+        logger.debug("cancel");
+        return new RedirectResolution(EMPLOYEES_DISPLAY);
+    }
+
+    public List<Department> getAllDepartments() {
+        return departmentService.getAllDepartments();
+    }
+    public List<Employee> getAllEmployees() {
+        return employeeService.getAllEmployees();
+    }
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">employees.jsp</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;%@ page contentType="text/html;charset=UTF-8" language="java" %>
+&lt;%@ include file="/taglibs.jsp" %>
+&lt;html>
+&lt;head>
+    &lt;link href="&lt;c:url value='main.css'/>" rel="stylesheet" type="text/css"/>
+    &lt;title>&lt;fmt:message key="label.employees"/>&lt;/title>
+&lt;/head>
+&lt;body>
+&lt;div class="titleDiv">&lt;stripes:label for="application.title"/>&lt;/div>
+&lt;h1>&lt;fmt:message key="label.employees"/>&lt;/h1>
+&lt;stripes:link href="/Employee.action" event="preEdit">Add New Employee&lt;/stripes:link>
+&lt;br/>&lt;br/>
+&lt;table class="borderAll">
+    &lt;tr>
+        &lt;th>&lt;stripes:label for="label.firstName"/>&lt;/th>
+        &lt;th>&lt;stripes:label for="label.lastName"/>&lt;/th>
+        &lt;th>&lt;stripes:label for="label.age"/>&lt;/th>
+        &lt;th>&lt;stripes:label for="label.department"/>&lt;/th>
+        &lt;th>&nbsp;&lt;/th>
+    &lt;/tr>
+
+    &lt;c:forEach var="emp" items="&#36;{actionBean.allEmployees}" varStatus="loop">
+        &lt;tr class="&#36;{loop.index%2==0?'even':'odd'}">
+            &lt;td class="nowrap">&#36;{emp.firstName}&lt;/td>
+            &lt;td class="nowrap">&#36;{emp.lastName}&lt;/td>
+            &lt;td class="nowrap">&#36;{emp.age}&lt;/td>
+            &lt;td class="nowrap">&#36;{emp.department.name}&lt;/td>
+            &lt;td class="nowrap">
+                &lt;stripes:link href="/Employee.action" event="preEdit">
+                &lt;stripes:param name="employee.employeeId" value="&#36;{emp.employeeId}"/>Edit&lt;/stripes:link>
+                &nbsp;&nbsp;&nbsp;
+                &lt;stripes:link href="/Employee.action" event="delete">
+                &lt;stripes:param name="employee.employeeId" value="&#36;{emp.employeeId}"/>Delete&lt;/stripes:link>
+            &lt;/td>
+        &lt;/tr>
+    &lt;/c:forEach>
+    &lt;/table>
+&lt;/body>
+&lt;/html>
+</code></pre>
+</div>
+<div class="sectionHeading">employeeForm.jsp</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;%@ page contentType="text/html;charset=UTF-8" language="java" %>
+&lt;%@ include file="/taglibs.jsp" %>
+&lt;c:set var="insertUpdateTitle" value="&#36;{empty actionBean.employee.employeeId ?'Add Employee':'Update Employee'}"/>
+&lt;html>
+&lt;head>
+    &lt;link href="&lt;c:url value='main.css'/>" rel="stylesheet" type="text/css"/>
+    &lt;style>td { white-space:nowrap; }&lt;/style>
+    &lt;title>&#36;{insertUpdateTitle}&lt;/title>
+&lt;/head>
+&lt;body>
+&lt;div class="titleDiv">&lt;stripes:label for="application.title"/>&lt;/div>
+&lt;h1>&#36;{insertUpdateTitle}&lt;/h1>
+
+&lt;stripes:form action="/Employee.action">
+&lt;stripes:errors/>
+    &lt;table>
+         &lt;tr>
+            &lt;td class="tdLabel">&lt;stripes:label for="label.firstName"/>:&lt;/td>
+            &lt;td>&lt;stripes:text name="employee.firstName" size="40"/> &lt;/td>
+        &lt;/tr>
+        &lt;tr>
+            &lt;td class="tdLabel">&lt;stripes:label for="label.lastName"/>:&lt;/td>
+            &lt;td>&lt;stripes:text name="employee.lastName" size="40"/>&lt;/td>
+        &lt;/tr>
+        &lt;tr>
+            &lt;td class="tdLabel">&lt;stripes:label for="label.age"/>:&lt;/td>
+            &lt;td>&lt;stripes:text name="employee.age" size="20"/>&lt;/td>
+        &lt;/tr>
+         &lt;tr>
+            &lt;td class="tdLabel">&lt;stripes:label for="label.department"/>:&lt;/td>
+            &lt;td>
+                &lt;stripes:select name="employee.department.departmentId">
+                    &lt;stripes:options-collection collection="&#36;{actionBean.allDepartments}" label="name" value="departmentId"/>
+                &lt;/stripes:select>
+            &lt;/td>
+        &lt;/tr>
+        &lt;tr>
+            &lt;td colspan="2">
+                &lt;stripes:hidden name="employee.employeeId"/>
+                &lt;br/>
+                &lt;stripes:submit name="save" value="Save" class="butStnd"/>
+                 &nbsp;&nbsp;&nbsp;
+                &lt;stripes:submit name="cancel" value="Cancel" class="butStnd"/>
+            &lt;/td>
+        &lt;/tr>
+    &lt;/table>
+&lt;/stripes:form>
+&lt;/body>
+&lt;/html>
+</code></pre>
+<br/>
+Sample validation errors in employeeForm.jsp:
+<br/><br/>
+<img alt="employees" src="/img/employeeForm.jpg" />
+</div>
+
+<div class="sectionHeading">web.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+         http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+
+    &lt;description>
+      Stripes CRUD Example
+    &lt;/description>
+    &lt;display-name>Stripes CRUD Example&lt;/display-name>
+
+    &lt;filter>
+        &lt;description>
+            Provides essential configuration and request processing services
+            for the Stripes framework.
+        &lt;/description>
+        &lt;display-name>Stripes Filter&lt;/display-name>
+        &lt;filter-name>StripesFilter&lt;/filter-name>
+        &lt;filter-class>net.sourceforge.stripes.controller.StripesFilter&lt;/filter-class>
+
+        &lt;!-- Optional init parameters for the Stripes Filter. -->
+        &lt;init-param>
+            &lt;param-name>ActionResolver.UrlFilters&lt;/param-name>
+            &lt;param-value>WEB-INF/classes&lt;/param-value>
+        &lt;/init-param>
+        &lt;init-param>
+            &lt;param-name>ActionResolver.PackageFilters&lt;/param-name>
+            &lt;param-value>net.learntechnology.stripes.*&lt;/param-value>
+        &lt;/init-param>
+    &lt;/filter>
+
+    &lt;filter-mapping>
+        &lt;filter-name>StripesFilter&lt;/filter-name>
+        &lt;url-pattern>*.jsp&lt;/url-pattern>
+        &lt;dispatcher>REQUEST&lt;/dispatcher>
+    &lt;/filter-mapping>
+
+    &lt;filter-mapping>
+        &lt;filter-name>StripesFilter&lt;/filter-name>
+        &lt;servlet-name>StripesDispatcher&lt;/servlet-name>
+        &lt;dispatcher>REQUEST&lt;/dispatcher>
+    &lt;/filter-mapping>
+
+    &lt;servlet>
+        &lt;servlet-name>StripesDispatcher&lt;/servlet-name>
+        &lt;servlet-class>net.sourceforge.stripes.controller.DispatcherServlet&lt;/servlet-class>
+        &lt;load-on-startup>1&lt;/load-on-startup>
+    &lt;/servlet>
+
+    &lt;servlet-mapping>
+        &lt;servlet-name>StripesDispatcher&lt;/servlet-name>
+        &lt;url-pattern>/dispatcher&lt;/url-pattern>
+    &lt;/servlet-mapping>
+
+    &lt;servlet-mapping>
+        &lt;servlet-name>StripesDispatcher&lt;/servlet-name>
+        &lt;url-pattern>/action/*&lt;/url-pattern>
+    &lt;/servlet-mapping>
+
+    &lt;servlet-mapping>
+        &lt;servlet-name>StripesDispatcher&lt;/servlet-name>
+        &lt;url-pattern>*.action&lt;/url-pattern>
+    &lt;/servlet-mapping>
+
+    &lt;context-param>
+        &lt;param-name>javax.servlet.jsp.jstl.fmt.localizationContext&lt;/param-name>
+        &lt;param-value>StripesResources&lt;/param-value>
+    &lt;/context-param>
+
+&lt;/web-app>
+
+</code></pre>
+</div>
+<div class="author">Code and Lesson - Rick Reumann</div>

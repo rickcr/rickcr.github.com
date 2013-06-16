@@ -1,0 +1,44 @@
+---
+title: JSF CRUD
+layout: article
+---
+<div class="source"> 
+<a href="http://ubuntuone.com/5XwZaWS0bTqyE6e1vIYfdU">jsf-crud source code</a><br/>
+<a href="http://ubuntuone.com/3pKJVd0ajmQYZJB425S0q9">jsf-crud.war</a> 
+</div>
+
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+<span style="color:red">NOTE: The delete functionality isn't working correctly in this application after you do a sort on the colums. Hopefully someone can help me figure out how to fix it.</span>
+<p/>
+The plan was for this to become a nice walk-through tutorial/lesson. Hopefully I'll get around to it. In the meantime, I think many will be able to get a lot out of this sample application. If there are things wrong with it, please let me know by e-mail. If you are new to JSF (as I am at the moment), please ask general JSF/MyFaces questions on the MyFaces mailing list. Unfortunately, I don't have a lot of time right now to answer JSF/MyFaces specific questions, plus you are better off getting answers from those much more knowledgable than myself.
+<br/><br/>
+Thanks to all those on the MyFaces and struts-users mailing list who helped with answering my many questions. (Not going to name specific names since I'd feel bad if I left someone out).
+<br/><br/>
+Some of things this application demonstrates...
+<ul>
+    <li>MyFaces
+    <li>DataTable using ListDataModel
+    <li>Sorting DataTable
+    <li>Master/Detail example not using request params to get detail record
+    <li>SelectItems for select options
+    <li>Use of prerender from Shale (not truly a good real-life usage, but demonstrates it being used).
+    <li>Using mostly request scope for Backing beans
+    <li>saveState
+    <li>preserveDataModel
+    <li>rendered attribute
+    <li>Managed properties
+</ul>
+</div>
+ 
+<div class="sectionHeading">Compiling/Building</div>
+<div class="section">
+I'm not a pro with Ant but the build script works even though I'm sure it could be re-written to be better.  <code>ant build</code> will build and deploy a war.
+</div>
+
+<div class="sectionHeading">Note</div>
+<div class="section">
+The "real life" part of this application stops at the EmployeeService class. This tutorial isn't demonstrating how you would actually do the true persistence of your data. I happen to like iBATIS <a href="http://ibatis.apache.org/"  target="new">http://ibatis.apache.org/</a>, but the point is you should be able to use any persistence framework you want.  The EmployeeService class in this example is just a layer that would then call your persistence framework of choice, but in real life you'd want a more robust setup (Interfaces etc). The application is mainly to demonstrate JSF usage not persistence. This lesson just uses a static map to store stuff.
+</div>
+<div class="author">Code and Lesson - Rick Reumann</div>
+ 

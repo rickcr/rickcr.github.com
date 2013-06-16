@@ -1,0 +1,326 @@
+---
+title: Struts2 CRUD
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/3XVhP5DxYConicSzejRgz7">struts2-crud source code</a><br/>
+<a href="">struts2-crud.war</a>	
+</div>
+<DIV class="author">Code and Lesson - <a href="mailto:myf1228@sina.com">Andy Ma</a></DIV>
+<br/>
+
+  <br/>
+                  <DIV class=sectionHeading>Introduction</DIV>
+      <DIV class=section>This application is based on Struts2 web framework. I try to use the most easy way to create the appliation. So if you've learned Struts1.x, here I'll show you how easy it is to migrate to Struts2. Also assumes the basic knowledge of java web application.<br/>This 
+      download application demonstrates a very simple application that handles 
+      your typical CRUD - Create, Retrieve, Update, Delete operations.<br/>Special thanks to Rick Reumann, for the service layer and dao layer of this application use his code in struts crud example on this site. </DIV>
+      <DIV class=sectionHeading>Requirements</DIV>
+      <DIV class=section>This application requires an application server that 
+      implements the Servlet 2.4 and JavaServer Pages 2.0 specifications. The 
+      examples should all work on Tomcat 5.x and Tomcat 6.0</DIV>
+      <DIV class=sectionHeading>Jars</DIV>
+      <DIV class=section>This application uses following jars: 
+      <UL>
+        <LI>struts2-core-2.0.6.jar 
+        <LI>xwork-2.0.1.jar
+        <LI>commons-logging-1.1.jar.jar 
+        <LI>freemarker-2.3.8.jar 
+        <LI>ognl-2.6.11.jar</UL>You can just use the jars that come with the 
+      source code for this application, but if you want the latest versions: 
+      <P>Try to visit:<A 
+      href="http://struts.apache.org/downloads.html">http://struts.apache.org/downloads.html</A>, 
+      find the latest release of struts2 and download the struts-2.x.x-lib.zip</P></DIV>
+
+
+      <DIV class=sectionHeading>web.xml</DIV>
+      <DIV class=section><PRE class=decorated><CODE>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app id="WebApp_9" version="2.4"
+    xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+    http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" &gt;
+
+    &lt;display-name&gt;Struts2CRUD&lt;/display-name&gt;
+    &lt;description/&gt;
+   <SPAN class=standout>
+    &lt;filter&gt;
+        &lt;filter-name&gt;struts2&lt;/filter-name&gt;
+        &lt;filter-class&gt;
+        org.apache.struts2.dispatcher.FilterDispatcher&lt;/filter-class&gt;
+  
+    &lt;/filter&gt;
+
+    &lt;filter-mapping&gt;
+        &lt;filter-name&gt;struts2&lt;/filter-name&gt;
+        &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+    &lt;/filter-mapping&gt;
+  </SPAN>
+    &lt;welcome-file-list&gt;
+        &lt;welcome-file&gt;index.html&lt;/welcome-file&gt;
+    &lt;/welcome-file-list&gt;
+
+    &lt;error-page&gt;
+        &lt;error-code&gt;404&lt;/error-code&gt;
+        &lt;location&gt;/pagenotfound.jsp&lt;/location&gt;
+    &lt;/error-page&gt;
+    
+    &lt;error-page&gt;
+        &lt;exception-type&gt;java.lang.Exception&lt;/exception-type&gt;
+        &lt;location&gt;/error.jsp&lt;/location&gt;
+    &lt;/error-page&gt;
+
+&lt;/web-app&gt;
+</CODE></PRE>Notice that Struts2 uses a Filter named FilterDispatcher to play the role of Controller in a mvc pattern, meanwhile Struts1.x uses a Servlet to do the job. Just as other web application, if we use a filter, we should config the filter and filter mapping elements as shown above. And typically, these two elements are the only infomation related to Struts2 we'd define in the web deploy descriptior.  </DIV>
+      <DIV class=sectionHeading>struts.xml</DIV>
+      <DIV class=section><PRE class=decorated><CODE>
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+
+&lt;!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd"&gt;
+
+&lt;struts&gt;
+
+   <SPAN class=standout>&lt;include file="struts-default.xml"/&gt;
+
+    &lt;package name="default" extends="struts-default"&gt;</SPAN>
+
+        &lt;action name="getAllEmployees" method="getAllEmployees" class="net.reumann.struts2demo.action.EmployeeAction"&gt;
+            &lt;result name="success"&gt;/resources/employees.jsp&lt;/result&gt;
+        &lt;/action&gt;
+        
+        &lt;action name="setUpForInsertOrUpdate" method="setUpForInsertOrUpdate" class="net.reumann.struts2demo.action.EmployeeAction"&gt;
+            &lt;result name="success"&gt;/resources/employeeForm.jsp&lt;/result&gt;
+        &lt;/action&gt;
+
+        &lt;action name="insertOrUpdate" method="insertOrUpdate" class="net.reumann.struts2demo.action.EmployeeAction"&gt;
+            &lt;result name="success" <SPAN class=standout>type="redirect-action"</SPAN> &gt;getAllEmployees&lt;/result&gt;
+            &lt;result name="input"&gt;/resources/employeeForm.jsp&lt;/result&gt;
+        &lt;/action&gt;
+        &lt;/action-mappings&gt;
+
+        &lt;action name="delete" method="deleteEmployee" class="net.reumann.struts2demo.action.EmployeeAction"&gt;
+            &lt;result name="success" type="redirect-action" &gt;getAllEmployees&lt;/result&gt;
+        &lt;/action&gt;
+    &lt;/package&gt;   
+&lt;/struts&gt;
+</CODE></PRE>struts.xml file is the place where we configure the components and action mappings for our Struts2 application. It plays the same role as struts-config.xml in a Struts application. One thing to remind you is that the struts.xml file is in the classes folder not WEB-INF folder. <p>Let's take a look at this file. The first two elements is about versioning and encoding info and DTD for the XML file. Then followed the include tag. This tag is intend to modularize the application by including other configuration files. Here, since we are creating a single module app, we just include a struts-default.xml. As the name implies, struts-default.xml file contains the basic and some default configure info for Struts2 app. Which is packed into struts2-core jar file in the lib. We don't have to modify it. Just remember to include it in your struts.xml like we show here. <p>The package node in the file is for the purpose of  defining a logic path of a group related actions. Here we don't want to specify a path so we just use "default" and we want use some default params in the struts-default.xml so we extends it as we do in our everyday java programming to reuse code. See those action definations, there's some thing special. Right! the result type definition. That gives us a clear idea that Struts2 have more than one result type. If we do not specify result type in the result element , we actually use the default type. That means we send the action result jsp file directly. Another type we use in our app is "redirect-action" type, just as the name says, it redirects the action result to another action. 
+<DIV class=sectionHeading>struts.propertifies</DIV>
+      <DIV class=section><PRE class=decorated><CODE>struts.custom.i18n.resources=MessageResources
+struts.ui.theme=simple
+</CODE></PRE> We use this file to tell struts2 we would use a file named MessageResources as our global message resource.(For Struts2 supports multi resource files).The second line we specify that we want struts tag use simple theme of jsp tag. Without this line, struts2's jsp tag would output some css style on it's tag by default. But I think we in many cases want control the style ourselves. So I choose to use simple theme. </DIV>
+
+
+      <DIV class=sectionHeading>EmployeeAction</DIV>
+      <DIV class=section><PRE class=decorated><CODE>
+public class EmployeeAction <SPAN class=standout>extends ActionSupport</SPAN> {
+	
+    private static EmployeeService empService = new EmployeeDaoService();
+    
+    private static DepartmentService deptService = new DepartmentDaoService();
+    
+    private Employee employee;
+    
+    private List&lt;Employee&gt; employees;
+    
+    private List&lt;Department&gt; departments;
+    
+    <SPAN class=standout>
+	public String getAllEmployees()</SPAN>{
+    	 employees = empService.getAllEmployees();
+    	 return "success";
+      }
+      <SPAN class=standout>
+        public String setUpForInsertOrUpdate()</SPAN>{
+		prep();
+		if (employee != null && employee.getEmployeeId() != null) {
+			employee = empService.getEmployee(employee.getEmployeeId());
+		}
+		return "success";
+	} 
+	  <SPAN class=standout>
+	public String insertOrUpdate()</SPAN>{
+        	if(!validationSuccessful()){
+    	    	return "input";
+        	}else{  
+    		    if (employee.getEmployeeId() == null) {
+    		    	empService.insertEmployee(employee);
+    	    	} else {
+    		    	empService.updateEmployee(employee);
+    	        }
+        	
+        	}
+    	return "success"; 
+      }
+    <SPAN class=standout>
+        public String deleteEmployee()</SPAN>{
+		empService.deleteEmployee(employee.getEmployeeId());
+		addActionMessage("Ok");
+		return "success";
+	}
+    
+        private void prep(){
+		departments = deptService.getAllDepartments();
+		Map session = <SPAN class=standout>ActionContext.getContext().getSession();</SPAN>
+		session.put("departments", departments); 
+		}
+	 
+	private boolean validationSuccessful(){ 
+		    if(employee.getFirstName()==null||employee.getFirstName().trim().length()<1){
+    		    addActionMessage("FirstName is required");
+    	    } 
+    	    if(employee.getLastName()==null||employee.getLastName().trim().length()<1){
+    		addActionMessage("LastName is required"); 
+    		} 
+    		if(employee.getAge()!=null){  
+    		  if(employee.getAge()>90||employee.getAge()<15){
+    		  addActionMessage("Make sure the age U input is correct");
+    	    	}
+             }
+        	if(this.hasActionMessages()){
+    		return false; 
+    		}else{ 
+    		return true;
+    	}
+    		
+       }
+    
+  
+    
+	public List<Employee> getEmployees() {
+		return employees;
+	}
+	public void setEmployees(List<Employee> employees) {
+		this.employees = employees;
+	}
+	public Employee getEmployee() {
+		return employee;
+	}
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
+	
+}
+</CODE></PRE>To create a struts2 action class, the most convinent way is to extends the ActionSupport class, which has implements the necessary Interface which Struts2 requires .    <BR>
+      <UL>
+        <LI>Then pay attention to red-colored method in our EmployeeAction class, those are methods we configured in the action mapping. struts2 have one requirements on mapping methods, that is return a String type as the result in accordance to the result name we configured in struts.xml file. Take the first method getEmployees() as an example. we return "success". so, to 'recieve' this result we define &lt;result name="success"&gt; as the result of getEmployee action in our struts.xml. 
+        <P></P>
+        <LI>Another intersting thing you can see in the class is that there are several getter and setter for the properties of the class. That's because Struts2 needs those methods to automatically obtain value to transfer to pages(In our app, it is List employees) or store value from page form(In our app, it is employee). I think there is an easy way to understand is that you imagine the page is get value from our action class and set value to it. While In Struts1.x we usually set value and get value from formbeans not directly from action class. <P>
+       <LI>Also notice that how we send value into Session Object in the prep() method. The recommanded way to use Session,Request or Response in Struts2 is through ActionContext Class. This class wrapped those objects and provides convinent way to access them.<p>
+      To simplify this application, I choose validate the user's input manually . Though Struts2 contains a validation framework. I think next time I'll show you how to use the validation framework in Struts2.</LI></UL></DIV>
+      <DIV class=sectionHeading>employees.jsp</DIV>
+      <DIV class=section><PRE class=decorated><CODE>
+&lt;%@ page contentType="text/html; charset=UTF-8"%&gt;
+<SPAN class=standout>&lt;%@ taglib prefix="s" uri="/struts-tags"%&gt;</SPAN> 
+&lt;html&gt;
+&lt;head&gt;
+    &lt;link href="&lt;s:url value="/resources/main.css"/&gt;" rel="stylesheet" type="text/css"/&gt;
+    &lt;title&gt;&lt;s:text name="label.employees"/&gt;&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="titleDiv"&gt;&lt;s:text name="application.title"/&gt;&lt;/div&gt;	
+&lt;h1&gt;&lt;s:text name="label.employees"/&gt;&lt;/h1&gt;		   
+	&lt;table width=600 align=center&gt;
+	    &lt;tr&gt; &lt;s:url id="insert" action="setUpForInsertOrUpdate"/&gt;
+	         &lt;td&gt;&lt;s:a href="%{insert}"&gt;Click Here to Add New Employee&lt;/s:a&gt;&lt;/td&gt;
+	     &lt;/tr&gt;
+	&lt;/table&gt;&lt;br/&gt;
+&lt;table align=center class="borderAll"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;&lt;s:text name="label.firstName"/&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;s:text name="label.lastName"/&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;s:text name="label.age"/&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;s:text name="label.department"/&gt;&lt;/th&gt;
+        &lt;th&gt;&nbsp;&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;s:iterator value="employees" status="status"&gt;
+        &lt;tr class="&lt;s:if test="#status.even"&gt;even&lt;/s:if&gt;&lt;s:else&gt;odd&lt;/s:else&gt;"&gt;
+            &lt;td class="nowrap"&gt;&lt;s:property value="firstName"/&gt;&lt;/td&gt;
+            &lt;td class="nowrap"&gt;&lt;s:property value="lastName"/&gt;&lt;/td&gt;
+            &lt;td class="nowrap"&gt;&lt;s:property value="age"/&gt;&lt;/td&gt;
+            &lt;td class="nowrap"&gt;&lt;s:property value="department.name"/&gt;&lt;/td&gt;
+            &lt;td class="nowrap"&gt;&lt;s:url id="update" action="setUpForInsertOrUpdate"&gt;
+		       		   &lt;s:param name="employee.employeeId" value="employeeId"/&gt;
+		       		&lt;/s:url&gt; &lt;s:a href="%{update}"&gt;Edit&lt;/s:a&gt;
+                &nbsp;&nbsp;&nbsp;
+                                &lt;s:url id="delete" action="delete"&gt;
+                                   &lt;s:param name="employee.employeeId" value="employeeId"/&gt;
+		       		&lt;/s:url&gt; &lt;s:a href="%{delete}"&gt;Delete&lt;/s:a&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;  		
+	 &lt;/s:iterator&gt;
+    &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</CODE></PRE>
+Struts2 provides many useful jsp tags.All of them are starting with 's:' symbol as shown above, for example &lt;s:text/&gt; and &lt;s:a href/&gt; . To use them we  annouce them at the beginning of a jsp page with &lt;%@ taglib prefix="s" uri="/struts-tags"%&gt;. I won't cover too much tag usage on this lesson. For a detailed reference ,visit <A href =http://struts.apache.org/2.x/docs/struts-tags.html>http://struts.apache.org/2.x/docs/struts-tags.html</a> .<p>
+There are two place I mark red color at the following employeeForm.jsp. One is a link to the other action and another is a &lt;s:hidden/&gt;tag. You'll see that I use a html link rather than struts2 tag &lt;s:a/&gt;. The reason I do this is that if there are &lt;s:hidden/&gt; and &lt;s:a/&gt; on the same page, Struts2 will do a silly thing. It will automatically add the param in you &lt;s:hidden/&gt;tag (In our case it is employee.employeeId) onto &lt;s:a/&gt; link. Ofcourse We won't want that happen. To avoid this, the most easy way is to use a plain html &lt;a href/&gt;tag as shown below.</DIV>
+      <DIV class=sectionHeading>employeeForm.jsp</DIV>
+      <DIV class=section><PRE class=decorated><CODE>
+&lt;%@ page contentType="text/html; charset=UTF-8"%&gt;
+&lt;%@ taglib prefix="s" uri="/struts-tags"%&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;link href="&lt;s:url value="/resources/main.css"/&gt;" rel="stylesheet" type="text/css"/&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;center&gt;
+&lt;div class="titleDiv"&gt;&lt;s:text name="application.title"/&gt;&lt;/div&gt;
+&lt;h1&gt;&lt;s:if test="employee==null || employee.employeeId == null"&gt;
+	 &lt;s:text name="label.employee.add"/&gt;
+   &lt;/s:if&gt;
+   &lt;s:else&gt;
+	 &lt;s:text name="label.employee.edit"/&gt;
+   &lt;/s:else&gt;&lt;/h1&gt;
+   
+	&lt;table width=600 align=center&gt;
+	    &lt;tr&gt;&lt;td&gt;&lt;<SPAN class=standout>a href="getAllEmployees.action"&gt;</SPAN>Click Here to View Employees&lt;/a&gt;&lt;/td&gt;
+	     &lt;/tr&gt;
+	&lt;/table&gt;	 
+	 &lt;table&gt;
+		&lt;tr&gt;&lt;td align="left" style="font:bold;color:red"&gt;
+	          &lt;s:fielderror/&gt;
+                  &lt;s:actionerror/&gt;
+                  &lt;s:actionmessage/&gt;&lt;/td&gt;&lt;/tr&gt;
+        &lt;/table&gt;
+     		 	
+    &lt;s:form&gt;
+     &lt;table align="center" class="borderAll"&gt;
+     	 
+         &lt;tr&gt;&lt;td class="tdLabel"&gt;&lt;s:text name="label.firstName"/&gt;&lt;/td&gt;
+         	        &lt;td&gt;&lt;s:textfield name="employee.firstName" size="30"/&gt;&lt;/td&gt;
+         &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td class="tdLabel"&gt;&lt;s:text name="label.lastName"/&gt;&lt;/td&gt;
+                            &lt;td&gt;&lt;s:textfield name="employee.lastName" size="30"/&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;&lt;td class="tdLabel"&gt;&lt;s:text name="label.age"/&gt;&lt;/td&gt;
+        	                &lt;td&gt;&lt;s:textfield name="employee.age" size="20"/&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+         &lt;tr&gt;
+            &lt;td class="tdLabel"&gt;&lt;s:text name="label.department"/&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;s:select name="employee.department.departmentId" 
+                list="#session.departments" 
+                listKey="departmentId" 
+                listValue="name"
+                /&gt;
+            &lt;/td&gt;
+             <SPAN class=standout>&lt;s:hidden name="employee.employeeId"/&gt;</SPAN>
+        &lt;/tr&gt;
+    &lt;/table&gt;
+
+    &lt;table&gt; 
+    	&lt;tr&gt;
+    	  &lt;td&gt;&lt;s:submit action="insertOrUpdate" key="button.label.submit" cssClass="butStnd"/&gt;&lt;/td&gt;
+    	  &lt;td&gt;&lt;s:reset key="button.label.cancel" cssClass="butStnd"/&gt;&lt;/td&gt;
+    	&lt;tr&gt;
+    &lt;/table&gt; 		  		 
+   &lt;/s:form&gt;
+&lt;/center&gt;		
+&lt;/body&gt;
+&lt;/html&gt;
+</CODE></PRE>
+Till now, we've handled the web tier of the application with struts2. And only the web tier should strus2 takes responsibility of. For the detailed description of service layer and dao layer, view Rick Reumann's Struts CRUD lesson on this site.
+</DIV>
+      <DIV class="author">Code and Lesson - Andy Ma</DIV> 

@@ -1,0 +1,233 @@
+---
+title: Sitemesh as an alternative to Tiles
+layout: article
+---
+<div class="source"> 
+<a href="http://ubuntuone.com/3PkeL8mQi3tEdX4sRdSTUc">rr-sitemesh source code</a><br/>
+<a href="http://ubuntuone.com/1F837Yua4dnbzcQOX34twL">rr-sitemesh.war</a><br/>
+</div>
+
+
+<br/><br/>
+<div class="sectionHeading">Why SiteMesh instead of Tiles?</div>
+<div class="section">
+The URL for SiteMesh <a href="http://www.opensymphony.com/sitemesh/">http://www.opensymphony.com/sitemesh/</a>. 
+At least read the first part there under "What is it?"
+I think you will quickly see the benefits after going through this brief example. In summary, the main reason I like SiteMesh
+more than Tiles is that SiteMesh is much easier to configure and use (less typing and easier to understand). Using Tiles, you need to have your forwards go to a "tiles page" versus the
+direct JSP. SiteMesh takes the approach that your page (your JSP) doesn't even know or care that it's being decorated. Using
+Tiles, each individual page you want to go to has to be associated with a layout - Major pain! Every time you create a new JSP that you
+want to forward to, you have to create another tiles definition and associate it with a layout and forward to the Tile page (versus the JSP).
+Using SiteMesh, you basically code your Struts application by forwarding to JSPs just
+like you would if you were not using Tiles. With SiteMesh you can simply set up a URL pattern and all your pages are decorated with the layout you choose. Obviously, you can set up different URL patterns and you
+can have decorators invoked based on many other possibilities other than a URL mapping (this example shows just one other type - a request parameter).
+<p/>
+<span style="color:red;font-weight:bold;">NOTE (Added 1/5/2005): Actually, there is one thing I found using SiteMesh that you might want to consider before you use it. It actually had to be taken out of an application I was using because of this issue: Sitemesh has to store the entire content of your html body into memory before it decorates it. If you have some very large pages, such as might happen in a reporting app where you don't have paging and end up with one large page of rows, you could end up with severe memory problems since all of that content is stored in a StringBuffer before being decorated. On my local machine with not a lot of RAM given to Tomcat, it actually would bring Tomcat down. Just something to consider before you adopt SiteMesh. Tiles does not have this problem.</span>
+</div>
+
+<div class="sectionHeading">Using Sitemesh</div>
+<div class="section">
+I really haven't really provided much of a tutorial here. Best bet is to just download the rr-sitemesh source and look it over. Then when you finish with that, look at the examples from Sitemesh which show more usages than this simple exmaple.<br/>
+<br/>
+I'll go through a few files below.
+</div>
+
+<div class="sectionHeading">web.xml</div>
+<div class="section">
+<pre class="decorated"></code>
+&lt;?xml version="1.0" encoding="ISO-8859-1"?>
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+    http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+    version="2.4">
+
+    &lt;display-name>Sitemesh Example&lt;/display-name>
+    &lt;filter>
+        &lt;filter-name>sitemesh&lt;/filter-name>
+        &lt;filter-class>
+            com.opensymphony.module.sitemesh.filter.PageFilter
+        &lt;/filter-class>
+    &lt;/filter>
+
+    &lt;filter-mapping>
+        &lt;filter-name>sitemesh&lt;/filter-name>
+        &lt;url-pattern>/*&lt;/url-pattern>
+    &lt;/filter-mapping>
+
+    &lt;servlet>
+        &lt;servlet-name>action&lt;/servlet-name>
+        &lt;servlet-class>org.apache.struts.action.ActionServlet&lt;/servlet-class>
+        &lt;init-param>
+            &lt;param-name>config&lt;/param-name>
+            &lt;param-value>/WEB-INF/struts-config.xml&lt;/param-value>
+        &lt;/init-param>
+        &lt;init-param>
+            &lt;param-name>debug&lt;/param-name>
+            &lt;param-value>2&lt;/param-value>
+        &lt;/init-param>
+        &lt;init-param>
+            &lt;param-name>detail&lt;/param-name>
+            &lt;param-value>2&lt;/param-value>
+        &lt;/init-param>
+        &lt;load-on-startup>2&lt;/load-on-startup>
+    &lt;/servlet>
+
+    &lt;servlet-mapping>
+        &lt;servlet-name>action&lt;/servlet-name>
+        &lt;url-pattern>*.do&lt;/url-pattern>
+    &lt;/servlet-mapping>
+
+    &lt;welcome-file-list>
+        &lt;welcome-file>index.jsp&lt;/welcome-file>
+    &lt;/welcome-file-list>
+&lt;/web-app>
+</code></pre>
+Only thing to note here is how we are telling the sitemesh filter to be called for all pages since we are using the url-pattern /*
+</div>
+
+
+<div class="sectionHeading">decorator.xml</div>
+<div class="section">
+Place this file in the WEB-INF dir.
+
+<pre class="decorated"><code>
+    &#60;decorators defaultdir="/decorators">
+        &#60;decorator name="main" page="mainDecorator.jsp">
+            &#60;pattern>*&#60;/pattern>
+        &#60;/decorator>
+        &#60;decorator name="panel" page="panelDecorator.jsp"/>
+        &#60;decorator name="popup" page="popupDecorator.jsp"/>
+    &#60;/decorators>
+</code></pre>
+The default dir tells us where we will place our decorator files. All requests will be decorated with "main" (mainDecorator.jsp) if no other decorator takes precedence since we are defining the pattern "*"
+</div>
+
+<div class="sectionTitle">Create Decorators</div>
+<div class="section">
+These are analogous to Struts Tile layouts. Places the decorator jsps in your  app/decorators directory.
+In the files below, where you see tags like: &#60;decorator:head /> this means SiteMesh will pull the information contained between your page's head tags and insert it into the decorator at this location.
+The main thing it inserts is the content of your body ( &#60;decorator:body /> ) (You can also configure other things besides the defaults based on meta tags. See the docs.)
+<br/><br/>
+Here are the three decorators for this example:
+<br/><br/>
+<b>mainDecorator.jsp</b>
+<pre class="decorated"><code>
+&lt;%@ taglib uri="http://www.opensymphony.com/sitemesh/decorator" prefix="decorator" %>
+&lt;%@ taglib uri="http://www.opensymphony.com/sitemesh/page" prefix="page" %>
+&lt;%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+&lt;html>
+&lt;head>
+    &lt;title>&lt;decorator:title default="{ Unknown Page - shouldn't see this, since
+    pages should define title }" />&lt;/title>
+    &lt;link href="&lt;%= request.getContextPath() %>/decorators/main.css"
+    &lt;%--pulls the header from the page we are decorating and inserts it here --%>
+    &lt;decorator:head />
+&lt;/head>
+
+&lt;body>
+&lt;table width="100%" height="100%">
+    &lt;tr>
+        &lt;td id="header" colspan="2">
+           &lt;bean:message key="label.header" />
+        &lt;/td>
+    &lt;/tr>
+    &lt;tr>
+        &lt;td valign="top" width="200">
+            &lt;%-- grabs the navigation.jsp page and decorates with the
+            panel decorator and puts it here --%>
+            &lt;page:applyDecorator page="/WEB-INF/jsps/navigation.jsp" name="panel" />
+        &lt;/td>
+        &lt;td>
+        &lt;table width="100%" height="100%">
+            &lt;tr>
+                &lt;td id="pageTitle">
+                    &lt;span class="pageTitle">
+                        &lt;%--pulls the title from the page we are
+                        decorating and inserts it here --%>
+                        &lt;decorator:title />
+                    &lt;/span>
+                &lt;/td>
+            &lt;/tr>
+            &lt;tr>
+                &lt;td valign="top" height="100%">
+                    &lt;%--pulls the body from the page we are
+                    decorating and inserts it here --%>
+                    &lt;decorator:body />
+                &lt;/td>
+            &lt;/tr>
+        &lt;/table>
+        &lt;/td>
+    &lt;/tr>
+    &lt;tr>
+        &lt;td id="footer" colspan="2">
+            &lt;bean:message key="label.footer" />
+        &lt;/td>
+    &lt;/tr>
+&lt;/table>
+&lt;/body>
+&lt;/html>
+</code></pre>
+<p/>
+<b>Panel Decorator</b>
+<pre class="decorated"><code>
+    &#60;%@ taglib uri="http://www.opensymphony.com/sitemesh/decorator"
+    prefix="decorator"
+    <span class="highlight">&#60;decorator:head /></span>
+    &#60;div class="panelDiv">
+        &#60;span class="panelTitle">&#60;decorator:title
+        default="Unknown panel" />&#60;/span>
+        &#60;br/>
+        &#60;%--inserts the body of whatever we are decorating here --%>
+        <span class="highlight">&#60;decorator:body /></span>
+    &#60;/div>
+</code></pre>
+<p/>
+<b>popupDecorator.jsp</b>
+<pre class="decorated"><code>
+&#60;%@ taglib uri="http://www.opensymphony.com/sitemesh/decorator"
+prefix="decorator"
+&#60;html>
+&#60;head>
+&#60;title><span class="highlight">
+    &#60;decorator:title default="{ Unknown Page -
+    shouldn't see this, since pages should define title }" />
+    </span>&#60;/title>
+&#60;link href="&#60;%= request.getContextPath() %>/decorators/main.css"
+rel="stylesheet" type="text/css">
+&#60;%--pulls the header from the page we are decorating
+and inserts it here --%>
+<span class="highlight">&#60;decorator:head /></span>
+&#60;/head>
+
+&#60;body>
+&#60;div class="popupDiv">
+    &#60;span class="popupTitle">
+    <span class="highlight">&#60;decorator:title
+        default="Unknown Title - shouldn't see this" /></span>&#60;/span>
+    &#60;br/>
+    &#60;%--inserts the body of whatever we are decorating here --%>
+    <span class="highlight">&#60;decorator:body /></span>
+&#60;/div>
+&#60;/body>
+&#60;/html>
+</code></pre>
+</div>
+
+<div class="sectionTitle">JSPs</div>
+<div class="section">
+The JSPs in the source code you'll see are pretty basic. The only thing to really note is that in the navigation menu you'll notice:
+ <pre class="decorated"><code>
+    &#60;c:url var="url" value="/summary.do">
+        &#60;c:param name="decorator" value="popup"/>
+        &#60;c:param name="confirm" value="true"/>
+    &#60;/c:url>
+    &#60;a href="javascript:popUp( '&#60;c:out value='&#36;{url}'/>' );">
+    Summary As PopUp&#60;/a> &#60;br/>&#60;br/>
+</code></pre>
+
+The key is that we are passing a decorator param of "popup." If you look back to our decorators.xml you'll see: <code>&#60;decorator name="popup" page="popupDecorator.jsp"/></code>.
+When the the Sitemesh filter sees a paramater passed with the name "popup" it will look for a decorator to apply (in this case 'popupDecorator.jsp').
+<div class="author">Code and Lesson - Rick Reumann</div>
+</div>

@@ -1,0 +1,27 @@
+---
+title: Struts2 PicoContainer w/ Hibernate
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/1Opc7FhBIT2mkyi1b1kASD">struts2_and_hibernate_and_picocontainer source code</a>
+</div>
+<DIV class="author">Code and Lesson - Paul Hammant</DIV>
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+	This is the same as 
+	Andy Ma's excellent <a href="{% post_url 2007-12-09-struts2_hibernate %}">Struts2 Hibernate example</a> 
+	listed on this site.  The same database setup and build.  
+	The differences lie in the XML for the web application and Struts configuration and Java components. 
+	 PicoContainer pioneered Constructor Injection, and true to that EmployeeAction now uses 
+	constructor args to receive its dependencies:
+<PRE class=decorated><CODE>
+	  public class EmployeeAction extends ActionSupport {
+	      // fields ..
+	      public EmployeeAction(DepartmentService deptService, EmployeeService empService) {
+	          this.deptService = deptService;
+	          this.empService = empService;
+	      }
+	  }
+</CODE></PRE>
+	Other components within the web app are similarly changed, and former singleton accessors have been removed.
+</div>

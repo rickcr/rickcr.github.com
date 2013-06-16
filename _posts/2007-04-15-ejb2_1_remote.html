@@ -1,0 +1,357 @@
+---
+title:  EJB 2.1 - Remote
+layout: article
+--- 
+<div class="source">
+<a href="http://ubuntuone.com/2oEqSJHGVQOUE4auZyK1RN">rr-employee-ejb 2.1 source code</a><br/>
+<a href="http://ubuntuone.com/3BdyJcNHNRcluhl55ccUvj">rr-employee-webapp source code</a>
+</div>
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+This quick EJB lesson doesn't explain why you should or shouldn't use EJBs, nor does it
+talk about when to use them and when not to, nor does it even
+explain any of the concepts behind the different EJB components. This guide is simply to help someone
+see how to put together a working EJB 2.1 application that makes remote EJB calls to an EJB deployed on JBoss Application server.
+<br/><br/> 
+To be consistent with many of the other examples, the front end is built using the Employee Struts
+application that is used elsewhere on this site. (The Struts app is 1.x not 2.x). The front end of 
+choice doesn't matter at all so if you haven't even seen a Struts application it won't matter. Where
+you see the "EmployeeAction" class in the source code that calls our EJB layer,
+ just think of a Servlet (which is all a Struts Action actually is)). 
+<br/><br/>
+This example is using Remote EJB calls. It's only slightly more complex than the <a
+href="${apcontext}/content/ejb/ejb2_1.jsp">Local EJB example</a>
+application. The main difference between the two applications is that this example has you run the war on one server and the ear on another server. The ejb lookups in the Action class are also slightly different - they make use of the
+Remote lookup in our ServiceLocator class. Also, you'll obvoiusly need two different servers to test this application.
+You'll deploy the war to one appserver and the ear to another server (you do this on just one machine if you play around
+with changing the ports, but I don't explain that in this lesson. It's easiest if you just have two machines to use.)
+<br/><br/>
+Without further ado, lets get started...
+</div>
+
+<div class="sectionHeading">The Setup</div>
+<div class="section">
+<b>Download the source bundles</b> The source is broken into two different downloads - one that builds the webapp war and
+the other that builds the ear.
+<br/><br/>
+<b>Java5</b> The Java5 JDK needs to be set as your environment. JAVA_HOME env variable needs to be defined pointing to yth the JDK home directory.<br/>
+<br/>
+<b>JBoss 4.x</b> - Download JBoss 4.x here <a href="http://labs.jboss.com/portal/jbossas/download">http://labs.jboss.com/portal/jbossas/download</a>. 
+Since you'll be probably be coding with the EJB 3.0 spec soon enough, set up JBoss4.x using the installer as described on the download page.
+After JBoss is installed declare a JBOSS_HOME environment variable pointing to the JBoss root directory.<br/>
+<br/>
+<b>Using the build.xml files</b> To run the builds you will need ant installed.
+Running "ant all" from the root of the project directory will build
+the entire project. Use can just run "ant deploy" which will do all
+plus deploy the ear to jboss (or the war file if working with the webapp project. Remember if you use 'ant deploy' make
+sure you are doing it with your project on the correct server. This demo is showig a remote call so the war is deployed on
+one server and the ear on another server. Might be easiest to just use 'ant all' and the manually move the ear and war
+file to where you want to deploy them (each is found in the {project}/build/distribution directory)). **IMPORTANT: make
+sure to change he jndi/jndi.properties file in the rr-employee-webapp project to match the IP of the machine where you are
+deploying you ear!
+<br/><br/>
+<b>Running the example</b> You'll need the ear file and the war file. Run the build files to build the ear and war as
+described in the step above. Deploy the ear to your JBoss
+/server/default/deploy directory and deploy the war to another application server (another JBoss instance or even just
+standalone Tomcat instance is fine.) Start jboss from the
+jboss/bin directory with 'run.bat' or 'run.sh' depending on your OS. Then start up the server where you deployed the war.
+Once the server where the webapp was deployed has started, go the following url:
+http://localhost:8080/rr-employee-webapp.
+<br/><br/>
+<div class="sectionHeading">A Note About XDoclet</div>
+<div class="section">
+XDoclet reduces the amount of annoying code you have to write when
+dealing with EJB 2.1 by probably 90%. I didn't use XDoclet here since
+I wanted to show all the steps you'd have go through to work with EJBs
+when not using XDoclet. EJB3 is also greatly simplified with the use
+of annotations. 
+</div>
+
+<div class="sectionHeading">The Persistence Layer</div>
+<div class="section">
+This example "Employee" application has the persistence classes in the
+'common' section of our project. The src code there will be built into
+a common.jar that will be part of our ear file. Our EJBs will simply
+call a service class that in turn calls our dao to handle our CRUD
+(create, retrieve, update, delete) operations. I could have just left
+the service class out and had the EJBs call the daos directly, but my
+personal preference is to have one extra layer of abstraction there
+just in case I need to do any non-dao related stuff that still belongs
+in a common area. The CRUD Employee dao in this example does nothing
+more than work with an in-memory list of items. 
+<br/><br/>
+Our EmployeeService class looks like:<br/>
+<pre class="decorated"><code>
+public class EmployeeService {
+    private static EmployeeDao dao = new EmployeeSimpleDao();
+
+    public static List&lt;Employee> getAllEmployees() {
+        return dao.getAllEmployees();
+    }
+
+    public static void updateEmployee(Employee emp) {
+        dao.update(emp);
+    }
+
+    public static void deleteEmployee(Integer id) {
+        dao.delete(id);
+    }
+
+    public static Employee getEmployee(Integer id) {
+        return dao.getEmployee(id);
+    }
+
+    public static void insertEmployee(Employee emp) {
+        dao.insert(emp);
+    }
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">EmployeeFacade</div>
+<div class="section">
+This is our EJB that has the actual business method implementations
+(our calls to our service/persistence layer). I followed the Sun convention and the one used in the
+"JBoss At Work" book and called all our object a Facade since our EJB
+acts as a Stateless Session Facade object 
+<a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/SessionFacade.html">http://java.sun.com/blueprints/corej2eepatterns/Patterns/SessionFacade.html</a> - 
+simply the object that exposes our business methods for our client to use.<br/><br/>
+<pre class="decorated"><code>
+public class EmployeeFacadeBean implements SessionBean {
+
+    private SessionContext sessionCtx;
+
+    public void setSessionContext(SessionContext sessionCtx) throws EJBException {
+        this.sessionCtx = sessionCtx;
+    }
+
+    public void ejbCreate() throws CreateException {}
+    public void ejbRemove() throws EJBException {}
+    public void ejbActivate() throws EJBException {}
+    public void ejbPassivate() throws EJBException {}
+
+    public List&lt;Employee> getAllEmployees() throws EJBException {
+        return EmployeeService.getAllEmployees();
+    }
+
+    public void updateEmployee(Employee emp)throws EJBException  {
+        EmployeeService.updateEmployee(emp);
+    }
+
+    public void deleteEmployee(Integer id) throws EJBException  {
+        EmployeeService.deleteEmployee(id);
+    }
+
+    public  Employee getEmployee(Integer id) throws EJBException  {
+        return EmployeeService.getEmployee(id);
+    }
+
+    public void insertEmployee(Employee emp) throws EJBException  {
+        EmployeeService.insertEmployee(emp);
+    }
+}
+</code></pre>
+</div>
+<br/>
+TODO: document the code snippets that follow...
+<br/>
+<div class="sectionHeading">EmployeeFacadeRemote</div>
+<div class="section">
+<pre class="decorated">
+import java.rmi.RemoteException;
+import java.util.List;
+
+public interface EmployeeFacadeRemote extends javax.ejb.EJBObject {
+    public List&lt;Employee> getAllEmployees() throws RemoteException;
+
+    public void updateEmployee(Employee emp) throws RemoteException;
+
+    public void deleteEmployee(Integer id) throws RemoteException;
+
+    public Employee getEmployee(Integer id) throws RemoteException;
+
+    public void insertEmployee(Employee emp) throws RemoteException;
+
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">EmployeeFacadeRemoteHome</div>
+<div class="section">
+<pre class="decorated"><code>
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
+
+public interface EmployeeFacadeRemoteHome extends EJBHome {
+    public static final String COMP_NAME = "java:comp/env/ejb/EmployeeFacade";
+    public static final String JNDI_NAME = "ejb/EmployeeFacadeRemote";
+
+    public EmployeeFacadeRemote create() throws CreateException;
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">ejb/META-INF/ejb-jar.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+
+&lt;ejb-jar xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"
+	version="2.1">
+
+	&lt;description>ejb-jar.xml for rr-employee-ejb&lt;/description>
+	&lt;display-name>ejb-jar.xml&lt;/display-name>
+
+	&lt;enterprise-beans>
+		&lt;!-- Session Beans -->
+		&lt;session>
+			&lt;description>EmployeeFacade Session Bean&lt;/description>
+			&lt;display-name>EmployeeFacade Session Bean&lt;/display-name>
+			&lt;ejb-name>EmployeeFacade&lt;/ejb-name>
+			&lt;home>net.reumann.ejb.EmployeeFacadeRemoteHome&lt;/home>
+			&lt;remote>net.reumann.ejb.EmployeeFacadeRemote&lt;/remote>
+			&lt;local-home>
+				net.reumann.ejb.EmployeeFacadeLocalHome
+			&lt;/local-home>
+			&lt;local>net.reumann.ejb.EmployeeFacadeLocal&lt;/local>
+			&lt;ejb-class>net.reumann.ejb.EmployeeFacadeBean&lt;/ejb-class>
+			&lt;session-type>Stateless&lt;/session-type>
+			&lt;transaction-type>Container&lt;/transaction-type>
+		&lt;/session>
+	&lt;/enterprise-beans>
+
+	&lt;assembly-descriptor>
+		&lt;container-transaction>
+			&lt;method>
+				&lt;ejb-name>EmployeeFacade&lt;/ejb-name>
+				&lt;method-intf>Local&lt;/method-intf>
+				&lt;method-name>getAllEmployees&lt;/method-name>
+				&lt;method-params>&lt;/method-params>
+			&lt;/method>
+			&lt;trans-attribute>Required&lt;/trans-attribute>
+		&lt;/container-transaction>
+		&lt;container-transaction>
+			&lt;method>
+				&lt;ejb-name>EmployeeFacade&lt;/ejb-name>
+				&lt;method-intf>Local&lt;/method-intf>
+				&lt;method-name>updateEmployee&lt;/method-name>
+				&lt;method-params>
+					&lt;method-param>net.reumann.common.vo.Employee&lt;/method-param>
+				&lt;/method-params>
+			&lt;/method>
+			&lt;trans-attribute>Required&lt;/trans-attribute>
+		&lt;/container-transaction>
+		&lt;container-transaction>
+			&lt;method>
+				&lt;ejb-name>EmployeeFacade&lt;/ejb-name>
+				&lt;method-intf>Local&lt;/method-intf>
+				&lt;method-name>deleteEmployee&lt;/method-name>
+				&lt;method-params>
+					&lt;method-param>java.lang.Integer&lt;/method-param>
+				&lt;/method-params>
+			&lt;/method>
+			&lt;trans-attribute>Required&lt;/trans-attribute>
+		&lt;/container-transaction>
+	....	
+	&lt;/assembly-descriptor>
+
+&lt;/ejb-jar>
+</code></pre>
+</div>
+<div class="sectionHeading">ejb/META-INF/jboss.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!DOCTYPE jboss PUBLIC "-//JBoss//DTD JBOSS 4.0//EN" "http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd">
+&lt;jboss>
+	&lt;enterprise-beans>
+		&lt;session>
+			&lt;ejb-name>EmployeeFacade&lt;/ejb-name>
+			&lt;jndi-name>ejb/EmployeeFacadeRemote&lt;/jndi-name>
+			&lt;local-jndi-name>EmployeeFacadeLocal&lt;/local-jndi-name>
+			&lt;method-attributes>&lt;/method-attributes>
+		&lt;/session>
+	&lt;/enterprise-beans>
+	&lt;assembly-descriptor>&lt;/assembly-descriptor>
+	&lt;resource-managers>&lt;/resource-managers>
+&lt;/jboss>
+</code></pre>
+</div>
+
+<div class="sectionHeading">common package  ServiceLocator</div>
+<div class="section">
+<pre class="decorated"><code>
+public class ServiceLocator {
+    ...
+    public static EJBHome getEjbRemoteHome(String remoteHomeJndiName, Class ejbRemoteHomeClass) throws ServiceLocatorException {
+        EJBHome remoteHome = null;
+
+        try {
+            /*
+            InitialContext will look for a jndi.properties in classpath.
+            we defined out jndi.properties in the jndi dir of this project
+            and the build puts in the classes dir in the common package
+             
+            use jndi.properties, but if you wanted to do it with code, you'd do: 
+            Properties env = new Properties();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
+            env.put(Context.PROVIDER_URL, "someIP:1099");   
+            env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces"); 
+            Context ctx = new InitialContext(env);
+            */
+            Context ctx = new InitialContext();
+            Object narrowFromObj = ctx.lookup(remoteHomeJndiName);
+            remoteHome = (EJBHome) PortableRemoteObject.narrow(narrowFromObj, ejbRemoteHomeClass);
+        } catch (ClassCastException cce) {
+            throw new ServiceLocatorException(cce);
+        } catch (NamingException ne) {
+            throw new ServiceLocatorException(ne);
+        }
+
+        return remoteHome;
+    }   ...
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">webapp pacakge - example call to an EJB in
+a Servlet (EmployeeAction)</div>
+<div class="section">
+*Note: For a real-life application is probably best to put these ejb calls in some kind of other layer outside your serlvet. This will make it easier to change around whether you need to make local EJB calls or remote ones.
+<pre class="decorated"><code>
+EmployeeFacadeRemoteHome employeeHome = 
+    (EmployeeFacadeRemoteHome) ServiceLocator.getEjbRemoteHome(EmployeeFacadeRemoteHome.JNDI_NAME, 
+    EmployeeFacadeRemoteHome.class);
+EmployeeFacadeRemote employeeEJB = employeeHome.create();
+List&lt;Employee> employees = employeeEJB.getAllEmployees();
+</code></pre></div>
+
+<div class="sectionHeading">ear application.xml file</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;application xmlns="http://java.sun.com/xml/ns/j2ee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                                 http://java.sun.com/xml/ns/j2ee/application_1_4.xsd"
+             version="1.4">
+    &lt;display-name>rr-employee-ejb EAR&lt;/display-name>
+    &lt;module>
+        <java>conf.jar</java>
+    &lt;/module>    
+    &lt;module>
+        &lt;java>common.jar&lt;/java>
+    &lt;/module>
+    &lt;module>
+        &lt;java>persistence.jar&lt;/java>
+    &lt;/module>
+    &lt;module>
+        &lt;ejb>employee-ejb.jar&lt;/ejb>
+    &lt;/module>
+&lt;/application>
+&lt;/code>&lt;/pre>&lt;/div>
+</code></pre></div>
+
+<div class="author">Code and Lesson - Rick Reumann</div>

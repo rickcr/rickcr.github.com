@@ -1,0 +1,156 @@
+---
+title:  Visitor Pattern
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/3Y4tOC8NVIO87NKhUsxKQR">visitor-pattern.zip</a>
+</div>
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+This tutorial goes over why we might want to use the visitor pattern and then provides a practical example of its use. (Thanks Tim for the suggestions.)
+</div>
+<div class="sectionHeading">Building and Running the example</div>
+<div class="section">
+Download the <a href="${appcontext}/examples/visitor-pattern.zip">visitor-pattern.zip</a> and unzip it. With Ant installed, you can just run "ant build" from the top level directory to build the source. The download also includes the class files so don't even have to do a build. To run the visitor example with Ant  type  'ant run-visitor.' To run the non-visitor (ugly) example type 'ant run-ugly.' If you don't have ant installed you should be able to figure out how to run the two classes with main methods on your own.
+</div>
+
+<div class="sectionHeading">How does the visitor pattern help us?</div> <div class="section">
+In order to see the benefit
+of using the visitor pattern, it helps to see an example of what you'd have to do if you were not using it. Let's take a
+scenario where we had several objects that could be nested within each other - an object tree - and we needed to flatten
+this tree out and display the object tree contents in different ways.  Maybe we want a way to print the objects to the
+console, and also want to be able to output our tree as XML and also create a DOM representation. In our example we have
+"Department" objects which can have any number of department objects beneath them and nested to any level. Each department
+also has "Employees" and each employee has "Jobs." We know we will need to recurse over our departments and also do some
+looping iterations in each department to get our employees and in turn the lists of jobs inside of each employee. At this
+point you might begin to see the  dilemma arising. We know we'll need some iteration functionality and we know we are
+going to need to provide some output at various levels during our iterations. One approach to solving this would be to
+create a class that iterates over all our items and at each point where we need to do something (ie generate output), we'd
+have to do some switching or if/else logic to determine what to output based off the type of output we wanted (console
+plain text, xml, dom.) Here is one such example of this type of code:  <a href="UglyNonVisitorWay.html"
+target="_blank">UglyNonVisitorWay.java</a> (opens in new window). Note how ugly and confusing the code is. You can imagine
+how bad it could get with even more different types of output we might need. You might think you can clean it up by moving
+all that output logic to separate output classes for each type of output we want. This doesn't entirely solve the problem,
+however, since, although we cleaned up one problem, we've introduced another: we now have to duplicate all the iterative
+code in each of our output classes! Our code might look a bit cleaner but we are now duplicating code which we would like
+to avoid.  </div>
+
+<div class="sectionHeading">Visitor Pattern to the rescue!</div>
+<div class="section">
+What we want is a way to not have to duplicate the iteration code that is used to go over our nested object tree while at the same time providing separate classes that can format the code in any way the object's see fit. This is a perfect case for using the visitor pattern.
+<br/><br/>
+The visitor pattern will enable us to 'visit' all our nested items, while at the same time providing a clean way to have our own unique classes handle what they want to do when they visit the items in our tree.  In our case we start with a Department object and we're going to hand a visitor class (responsible for formating our output) to an 'accept' method in the Department object. Once the visitor is passed to the Department's accept method it will just call back to the visitor that was passed to it, but the key is that when the visitor is called from our Department object, the Department hands the visitor a reference of itself. Now the visitor can do what it wants with the reference it has (in our formatting case - simply read what it needs from Department and output it). To take a simplistic example, imagine yourself as a Person object - you'll have information about your name, age, height, etc. Somewhere out there is a visitor object that knows how to display your name, age, etc. It needs your information, though, so you have an 'accept(Visitor visitor) method that accepts the visitor. When you accept the visitor you say 'ok here is a reference to myself so you can do what you want with it." You do that by calling a specific method on the visitor from your accept method: visitor.visit(this). The visitor's visit(Person p) method now has a reference of your information so it can do what it needs to do with it. The nice thing is later on a different type of Visitor can come along but your accept method doesn't change. As long as they are of type 'Visitor' everything will be fine. 
+<br/><br/>
+Now let's take a look at portions of the java code from the visitor-pattern application.
+</div>
+
+<div class="sectionHeading">The 'Visitable' objects</div>
+<div class="section">
+In our visitor-pattern application there is a top level Department object that can then have a collection of other Department objects  and/or a collection of Employee objects. Each Employee object can also have a collection of Job objects.
+<br/><br/>
+The important part of each of these objects above is that they all implement our 'Visitable' Interface:<br/>
+<pre class="decorated"><code>
+public  interface Visitable {
+    public void accept(Visitor visitor);
+}
+</code></pre>
+Each of our objects that can be visited by our Visitor (which we'll see soon) implements the <code>accept</code> method, such as we see in our Department object:<br/>
+<pre class="decorated"><code>
+public class Department implement Visitable {
+    //...
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+}
+</code></pre>
+Each of the other Visitable objects - Employee and Job - has a similar 'accept' implementation:<br/>
+<pre class="decorated"><code>
+//in Employee.java
+public void accept(Visitor visitor) {
+    visitor.visit(this);
+}
+
+//In Job.java
+public void accept(Visitor visitor) {
+    visitor.visit(this);
+}
+</code></pre>
+
+Notice how each <code>accept</code> method calls a visit method on the
+visitor passed to it while passing in an reference of the Visitable object to
+the visit method. It's the responsibility of the Visitor that is passed to
+the <code>accept</code> method to know how to handle dealing with the Visitable object that is
+passed to it. We'll see this in the next section.  
+</div>
+
+<div class="sectionHeading">The 'Visitor'</div>
+<div class="section">
+All of our Visitor classes must implement the various overloaded visit methods that you've just seen. Hence we have our Visitor interface that each Visitor has to implement: 
+<pre class="decorated"><code>
+public interface Visitor {
+    void visit(Employee employee);
+    void visit(Department department);
+    void visit(Job job);
+    void visit(Collection<? extends Visitable> visitableObjects);
+}
+</code></pre>
+We'll just take a peek at one of the Visitor implementations (download the source code to view the others.) Here is our <code>SystemOutVisitor</code> that just dumps output to the console:<br/>
+<pre class="decorated"><code>
+public class SystemOutVisitor implements Visitor {
+    int indent = 0;
+    
+    public void visit(Employee employee) {
+        print("Employee: "+employee.getEmployeeName() );
+        visit(employee.getJobs());
+    }
+
+    public void visit(Department department) {
+        print("Department: "+department.getDepartmentName());
+        visit(department.getEmployees());
+        visit(department.getDepartments());
+    }
+    
+    public void visit(Job job) {
+        print("jobCode: "+job.getJobCode()+", jobDescription: "+job.getJobDescription() );
+    }
+    
+    public void visit(Collection<? extends Visitable> visitableObjects) {
+        ++indent;
+        for(Visitable obj: visitableObjects ) {
+            obj.accept(this);
+        }
+        --indent;
+    }
+    
+    private void print(String s ) {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0;i&lt;indent;i++) {
+            builder.append("   ");
+        }
+        builder.append( s );
+        System.out.println( builder.toString() );
+    }
+}
+</code></pre>
+Look at each of the overloaded visit method implementations.  You can see now how the output is delegated to this visitor class and kept separate from our Visitable objects. Other classes, such as the XMLVisitor, will output things slightly differently for each visit method.
+<br/><br>
+To start off the chain of events that will use the SystemOutViistor all we need to do is pass a populated Department to the Department's accept method. You see this in the main method of VisitorPatternDemo:<br/>
+<pre class="decorated"><code>
+public static void main(String[] args) {
+    Department dept = new Department("Main Department");
+    dept.setDepartments(Util.getDepartments());
+    Visitor visitor = new SystemOutVisitor();
+    dept.accept(visitor);
+    ...
+}
+</code></pre>
+<br/>
+One of the great benefits of using the Visitor pattern is that Visitor can also keep track of its own state as it visits different accept methods of the Visitable objects. Look back at the UglyNonVisitorWay class and notice how we had to pass around a 'pad' reference to the recursive calls so that we can keep track of  how deep to pad some of our output. Now look how much cleaner the implementation is in this Visitor class. Since we are always using the same visitor instance we can easily keep track of things with a simple 'int index' variable and increment and decrement as needed before and after any iterations over our collections.
+<br/><br/>
+Using the visitor pattern also makes any recursive calls much cleaner. Each visit method will only need to make iterations over any collections to, at most, one level deep.
+During each iteration the accept method that is called might in turn call back to the visitor and start another iteration, but the visit method itself is very clean. Notice
+what happens in the visit(Department) method of our SystemOutVisitor above. One of the calls is to visit(department.getDepartments());. In the visit(Collection) method each
+Department in the collection will be calling accept(this) and thus visit(Department) will be called again on our Visitor from the Department's accept method. 
+<br/><br/>
+Hopefully you see how the Visitor pattern can be a very useful pattern to implement.  </div>
+<div class="author">Code and Lesson - Rick Reumann</div>

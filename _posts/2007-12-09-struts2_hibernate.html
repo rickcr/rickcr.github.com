@@ -1,0 +1,64 @@
+---
+title: Struts2 CRUD Hibernate
+layout: article
+---
+<DIV class="author">Code and Lesson - <a href="mailto:myf1228@sina.com">Andy Ma</a></DIV>
+<br/>
+<a href=" struts2-hibernate.zip">struts2-hibernate source code</a><br/>
+<a href=" struts2-hibernate.war">struts2-hibernate.war</a><br/>
+  <br/>
+ <div class="sectionHeading">Introduction</div>
+<div class="section">
+Hibernate is a popular and powerful ORM(Object Relational Mapping) Framework. When you
+dealing with the database programming, it can significantly speed up your
+productivity and simplify the procedure of development. In this application I will show you how struts2 and hibernate3 work together and how simple it is to add hibernate to our struts2crud project.  </div>
+<DIV class=sectionHeading>Requirements</DIV>
+      <DIV class=section>This application requires an application server that 
+      implements the Servlet 2.4 and JavaServer Pages 2.0 specifications. The 
+      example has been tested on Tomcat 5.x and Tomcat 6.0</DIV>
+<div class="sectionHeading">Database Setup</div>
+<div class="section">
+We use MySQL5 as our database in this application. Be sure you've installed the correct version of MySQL and it is running before you create our example database.
+<br/><br/>
+Creating example database and loading sample data
+<ol>
+	<li>download the source file of our application </li>
+	<li>unzip into directory of choice</li>
+	<li>find the xdb.sql file under a folder named db_build</li>
+	<li>copy xdb.sql to your partation c:</li>
+	<li>run your MySQL Command Line Client.</li>
+	<li>after entering your password, you should see a prompt line "mysql&gt;"<br>
+	    then input the following command and run it:<br>
+	    \.&nbsp;&nbsp;c:/xdb.sql</li>   
+	</ol>
+The last step should create the schema and load data we need.
+    <br/><br/>
+    <span style="color:red;">Important: </span>Remember that replaces to your own MySQL database username and password of the hibernate.cfg.xml file. You can find the hibernate.cfg.xml under \web-inf\classes after Tomcat unpack the war file. I highlight them below on the hibernate.cfg.xml. Unless you've done this,the hibernate won't work properly. 
+    <br/><br/>
+</div>
+ <DIV class=sectionHeading>hibernate.cfg.xml</DIV>
+      <DIV class=section><PRE class=decorated><CODE>
+&lt;?xml version='1.0' encoding='utf-8'?&gt;
+&lt;!DOCTYPE hibernate-configuration PUBLIC
+  "-//Hibernate/Hibernate Configuration DTD//EN"
+  "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd"&gt;
+&lt;hibernate-configuration&gt;
+     &lt;session-factory&gt;
+     	&lt;property name="connection.useUnicode"&gt;true&lt;/property&gt; 
+        &lt;property name="connection.characterEncoding"&gt;UTF-8&lt;/property&gt;
+        &lt;property name="connection.driver_class"&gt;com.mysql.jdbc.Driver&lt;/property&gt;
+        &lt;property name="connection.url"&gt;jdbc:mysql://localhost:3306/xdb&lt;/property&gt;
+        &lt;property name="connection.username"&gt;<span style="color:red;">Your User Name</span>&lt;/property&gt;
+        &lt;property name="connection.password"&gt;<span style="color:red;">Your Password</span>&lt;/property&gt;
+        &lt;propertyname="dialect"&gt;org.hibernate.dialect.MySQLDialect&lt;/property&gt;
+        &lt;property name="current_session_context_class"&gt;thread&lt;/property&gt;
+        &lt;propertyname="hibernate.transaction.factory_class"&gt;
+                 org.hibernate.transaction.JDBCTransactionFactory&lt;/property&gt;     
+        &lt;mapping resource="net/learntechnology/struts2demo/vo/Department.hbm.xml"/&gt;
+        &lt;mapping resource="net/learntechnology/struts2demo/vo/Employee.hbm.xml"/&gt;
+      &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;
+</CODE></PRE>
+<div>(Rest of lesson coming soon. For a sample Strut2 CRUD application without using hibernate see my <a href="{% post_url 2007-11-26-struts2_crud %}">Struts2 CRUD</a> lesson.)</div>
+<br/>
+<DIV class="author">Code and Lesson - Andy Ma</DIV>

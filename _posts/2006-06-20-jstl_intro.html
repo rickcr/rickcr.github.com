@@ -1,0 +1,1674 @@
+---
+title: Introduction to JSTL
+layout: article
+---
+<div class="author">By R.S.RAMASWAMY <a href="mailto: rs.ramaswamy@gmail.com">rs.ramaswamy@gmail.com</a></div>
+<br/>
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+<p>As J2EE programmers, we are familiar with Servlets , JSP   and JavaBeans.
+Any JSP page should encapsulate the business logic in a bean and invoke it by
+using &lt;jsp:useBean>  tag.  Till recently, a combination of Servlets, JSP and
+beans was the standard practice. But, the JCP realeased an API for enabling
+programmers to create custom tags and use them in their JSP pages. The
+difference between javabean and java custom tags was that, though both made use
+of java classes,  tags can be used by non-programmers also without  knowledge of
+Java programming, just as they would use html tags.( From a programmer's
+perspective,however, a much more important distinction is that tags are specific
+to the page in which they are created while javabeans are general. )
+</p>
+
+<p>( 	Back in  1998, a Web-Server Technology , known as ColdFusion , created by
+Allaire of Allaire Corporation, was very much in demand!. It was a purely tag-
+based language, using which page-authors can turn into programmers overnight.
+The tags were so powerful and simple to use! There is a separate lesson on
+using ColdFusion for typical web-based database opeartions, elsewhere in this
+edition, just to indicate the source of inspiration of the tag library idea,
+of the JSTL. To this day, ColdFusion is unbeatable, in its power,speed, ease
+of use and productivity. However, among the various web-server technologies (
+namely ASP, Servlets, JSP,Perl,PHP , ColdFusion & ASP.net), CF is the only
+technology that is not free!And perhaps for this reason, it is no longer
+popular in Indian environment, though it is said to be very much in vogue
+still, in US!</p>
+
+<p>MacroMedia of 'Flash fame' purchased ColdFusion. There was even a tutorial on
+MacroMedia ColdFusion Exprsess in DeveloperIQ., a few months back.It is
+interesting to make a comparison of the CF tags approach and the JSTL approach.,
+especially , in DataBase operations.Readers are requested to read the lesson on
+ColdFusion,in this edition, after covering sql tags in JSTL , in the fourth part
+of this tutorial.. )</p>
+
+<p>To resume,the release of the TagLibrary API, triggered   a lot of
+activity and hundreds of tags were introduced by the java community,
+some of them 'open' and a few 'proprietary'.  This led to a lot of
+confusion in code maintenance, because knowledge of Java was no longer
+sufficient to understand and interpret a given jsp page using non-
+standard tags .The JCP had unwittingly   introduced elements of
+confusion by the JSP-Custom-Tag specification.</p>
+
+<p>To correct this problem, Sun and JCP, initiated   the JSP-Standard Tag
+Library (JSTL) project.  Though there are a number of popular and
+powerful tag-libraries, it is always better for j2ee coders to  adopt the
+JCP standard because, it is likely to be merged into the core
+specification of Java langauage itself , in future. (That yardstick may
+be valid for all creations, in Java world. Splintering of the Java
+platform due to' hyper-active creativity'  without the corresponding
+discipline to get it through a standards body ,is the greatest threat,
+looming large in the Java-horizon.</p>
+
+<p>Too frequent revisions and additions, that too without caring for backward
+compatibility,are not conducive to programmer productivity  and the net result
+is that programmers spend ,in learning new twists in grammar,  their  precious
+time  which should have been spent more usefully in applying that grammar in
+solving business-logic problems and acquiring proficiency in the chosen
+application-domain. While, tag library is sometimes very elegant and simple to
+use, it defeats the very purpose if the tags  are not standard tags and if there
+is proliferation of non-standard tags.  It is for this reason that JSTL merits
+our serious study and adoption.</p>
+
+<p>JSTL is a quite recent  development. It was only in 2003, that the official
+version 1.1 was released and now incorporated into  JSP-2.</p>
+
+<p>According to the latest position, the JCP is suggesting that a JSP page
+should be completely free from any trace of Java code!  So, programmers
+who were writing their JSP using Javabeans and scriptlets , may not be
+able to carry on in their old style as,  to prevent programmers from
+introducing scripting sections in their pages, there is a  provision
+for turning off scriptlets altogether from a jsp page. If that happens
+,all our knowledge of Java coding will be of little use in creating a
+jsp page, though such knowledge may be useful in creating beans and
+other types of java programs.</p>
+
+<p>It is thus very important for  J2EE students, to understand the trend and get to know the techniques, advantages and limitations of  tag libraries...In a way, a study of JSTL is almost synonymous  with a study of the latest version of JSP (ie) JSP2.0 .</p>
+</div>
+
+<div class="sectionHeading">Getting Started</div>
+<div class="section">
+ <p>Without an introductory demo for each of these types, it may be difficult to
+ appreciate the significance of the above lines. So we will now give simplest
+ illustration.</p>
+
+<p>[It is presumed that readers are conversant with basic Servlets & JSP techniques
+and executing them in Tomcat environment.]
+</p>
+
+ <p>Servlets are full-fledged java-classes and so are very powerful. But, when we
+ want to create a dynamically-generated web-page using servlets, it becomes
+ difficult and clumsy. Let us consider a very simple example.
+</p>
+
+<p>The user fills up text in html form with his name and submits the form,to the
+servlet. The servlet reads the data , appends a greeting and sends it back to the user. </p>
+
+<p>We being with a simple html form: </p>
+<pre class="decorated"><code><b>greeting.html</b>
+
+&lt;html>&lt;body>
+&lt;form method="post" action="http://localhost:8080/servlet/greeting">
+    &lt;input type="text" name="text1">
+    &lt;input type="submit">
+&lt;/form>
+&lt;/body>
+&lt;/html>
+</code></pre>
+
+<p>Relevant section of <b>Greeting.java servlet</b></p>
+
+<pre class="decorated"><code><b>Greeting.java</b> ( code-snippet only)
+
+public void doPost(HttpServletRequest req, HttpServletResponse  resp)
+    throws  ServletException,IOException {
+
+    resp.setContentType("text/html");
+    PrintWriter  out = resp.getWriter();
+    //-------------------------------
+    String  s = req.getParameter("text1");
+    out.println("&lt;html>&lt;body  bgcolor='yellow'>");
+    out.println("We  welcome"+",&lt;br>");
+    out.println (s);
+    out.println("&lt;/body> &lt;/html>");
+}</code></pre>
+
+<p>
+It will be noticed that  we have to write so many 'out.println' statements. This makes the page unreadable.( If String-buffer is used , we can do it with just a single out.println , but  forming the correct string may pose difficulties).</p>
+
+ <p>It is to solve this problem that JSP was developed(1999).  While a servletinterposes HTML   in java code, JSP interposes java-code in HTML, as some authors correctly observe..( in this case, we have to modify the action field in html form, so that it refers to the following  greeting1.jsp).</p>
+
+<b>Delimeters</b><br/>
+<p>Student readers will know about 'delimiters' ( &lt;%) in ASP. This is the same as in  JSP. Only the syntax is slightly different.  In JSP parlance, the code within delimiters is known as 'scriptlet'.( see greeting1.jsp)</p>
+
+<pre class="decorated"><code><b>greeting1.jsp</b>
+
+&lt;html>
+&lt;body bgcolor="yellow">
+&lt;%
+    String   s = request.getParameter("text1");
+    out.println("we welcome"+&lt;br>);
+    out.println(s);
+%>
+&lt;/body>
+&lt;/html></code></pre>
+
+<b>Expressions</b><br/>
+<p>Some coders prefer to use expressions.</p>
+
+<p>What is an 'expression'? It is a method of sustituting request-time values in html page. ( see greeting2.jsp). Carefully note that there is no semi-colon after ("text1").</p>
+
+<pre class="decorated"><code>&lt;b>greeting2.jsp&lt;/b>
+ &lt;html>
+ &lt;body bgcolor="yellow">
+    We welcome&lt;br>
+    &lt;%=  request.getParameter("text1") %>
+&lt;/body>
+&lt;/html></code></pre>
+
+<b>Using a java bean</b><br/>
+<p>The third variant is to use a javabean to encapsulate the business-logic. We  develop a jsp-bean as follows:</p>
+
+<pre class="decorated"><code><b>greeter.java</b>
+
+package ourbeans;
+
+public class  greeter {
+    public greeter()  {  }
+    public  String   greetme(String s) {
+        return  "we welcome..."+s;
+    }
+}</code></pre>
+
+<p>This source file is compiled and the class-file is copied to :</p>
+
+<p>'e:\tomcat5\webapps\root\WEB-INF\classes\ourbeans'</p>
+
+<p>(Carefully note that WEB-INF folder name should be in capital letters).</p>
+
+<p>(Anytime, a new class is placed in Tomcat, we should remember to restart the server).</p>
+
+We can now  write our JSP code as follows:
+
+<pre class="decorated"><code><b>greeting3.jsp</b>
+
+&lt;html>
+&lt;body>
+&lt;jsp:useBean    id='bean1'  class='ourbeans.greeter'>
+&lt;%
+    String  s = request.getParameter ("text1");
+    String  r =     bean1.greeteme(s);
+    out.println(r);
+%>
+&lt;/body>
+&lt;/html></code></pre>
+</div>
+
+<div class="sectionHeading">Enter JSTL</div>
+<div class="section">
+<p>We are now entering JSTL zone. How exactly we should proceed to install JSTL, we will take up shortly. For the moment, we are just getting familiar with the required syntax. We begin with taglib directive:
+</p>
+<pre><code>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core"%></code></pre>
+
+<p>The directive says that we are using 'core' tags and the prefix will be 'c'.  If we want to assign the value 'sam' to a variable 'a' and then print it, the JSTL code will be:  </p>
+
+<pre><code>&lt;c:set var="a" value="sam"/>
+&lt;c:out value="&#36;{a}"/></code></pre>
+<p>The Dollar sign  & brace will be familiar ground for Perl programmers.   In JSTL & JSP-2, it is  known as EL ( Expression Language).</p>
+
+<p>To consider another example, In a servlet & jsp, we write:</p>
+
+<pre><code>String s = request.getParameter("text1");</code></pre>
+
+<p>to collect the input from the user.</p>
+
+<p>The same job is done in    JSTL   by:</p>
+
+<pre><code>&lt;c:set  var="s" value="&#36;{param.text1}" ><code></pre>
+
+<p>With these brief hints, it should not be difficult to understand the
+following JSP page written  by  using JSTL core-tags.</p>
+
+<pre class="decorated"><code><b>greeting4.jsp (uses  JSTL)</b>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core"%>
+&lt;html>
+&lt;body>
+    &lt;c:set var=s  value="&#36;{param.text1}" />
+    We welcome&lt;br>
+    &lt;c:out value="&#36;{s}" />
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>In the previous  examples, there was java code in a few lines at least. But, in the  JSTL  example, we find that there are only tags and no java    scriptlets. This is the avowed objective of the JSTL  initiative under the auspices of Java Community Project! Why?   This enables, clean separation of  Page author's role and Logic programmers' role. Thus maintenance becomes easy.</p>
+</div>
+
+<div class="sectionHeading">Getting Set Up</div>
+<div class="section">
+<p>There are five groups under which the JSTL tags have been organized.</p>
+<p>They are as follows:</p>
+<ol>
+	<li>core</li>
+	<li>xml</li>
+	<li>sql</li>
+	<li>formatting</li>
+	<li>functions</li>
+</ol>
+
+<p>The most difficult part is  to set up Tomcat  so that it executes JSTL.   There are some basic requirements, before we can experiment and study the use of JSTL.All that we have studied in using Tomcat for servlets and JSP may not be sufficient to learn JSTL, because, jstl library is not built into Tomcat5  even, as yet.</p>
+
+<p>Without hands-on experimention, JSTL could be confusing and strange, because of the   fact that it is very  recent  . But in coming months, support will be built into Tomcat and we won't have to worry about installing the JSTL  libraries inside Tomcat. But, as it is, we have to learn how to set up the necessary development environment..</p>
+
+<p>So, how do we go about , placing the JSTL libraries in tomcat?</p>
+
+<p>The best solution is to get JWSDP1.3. This is Java Web Service Development' Pack. (Carefully note the version , however!).</p>
+
+<p>It is good to start with this because, it contains a lot of valuable software , including the latest and greatest from  JCP, (ie) JSF (Java Server Faces).... which may soon replace Struts.</p>
+
+<p>We unzip the jwsdp1.3 and install it in C: drive.</p>
+
+<p>There are a number of folders like JAXP, JAXR, JAXB,JAX-RPC, JSF, JSTL etc. in the JWSDP pack.</p>
+
+<p>For the present, we are interested in JSTL folder only. If we expand the JSTL folder, we find  four sub folders:</p>
+
+a) docs<br/>
+b) lib<br/>
+c) samples<br/>
+d) tld  (tag library descriptors)<br/>
+
+<p>When we look into the 'lib' folder, we find      two jar files:</p>
+
+a) standard.jar<br/>
+b) jstl.jar<br/>
+
+ <p>We should copy  these two jar files into  :</p>
+
+ <p>'e:\tomcat5\webapps\root\WEB-INF\lib'</p>
+
+<p>(Remember to restart the Tomcat server).</p> That is all that is required to use JSTL!
+
+<p>The included taglibrary descriptors do not have to be placed in the WEB-INF folder.These files are already  included in the /META-INF folder of the jstl.jar and so will be automatically
+loaded by Tomcat, when it is restarted.</p>
+
+<p>(We are using tomcat5 & jdk1.4.2. The results are not  ensured         for other environments. However, we adopted the same method in Tomcat4.1 with jdk1.41 and got correct functioning.)</p>
+
+<p>The JSTL    folder contains a sub-folder named 'tld'.  There will be a number of tld files there such as</p>
+
+c.tld,    ( core)<br/>
+x.tld,    (xml)<br/>
+fmt.tld,  (format)<br/>
+sql.tld &  (sql)<br/>
+fn.tld.    (functions)<br/>
+
+<p>Some authors say that we should copy these tld files  to ... :\tomcat5\webapps\root\WEB-INF   folder. A few others , say that there is automatic detection and so it is  not necessary. We  chose not to copy the tld files into e:\tomcat5\webapps\root\WEB-INF  folder ! We found that the programs work well. No problem!</p>
+
+<p>When we study the web.xml file in e:\tomcat\webapps\root\WEB-INF   folder, we find that it follows  DTD and not Schema. ( DTD  stands for Document -Type- Definition). ( Schema  serves the same purpose but is in XML format and is more powerful. The default is DTD ).</p>
+
+<p>This point is very important. The default allows us to use EL,(Expression Language) but by using &lt;c:out  value="&#36;{s}" syntax.</p>
+
+<p>If we modify the DTD into the prescribed J2EE schema , we can directly print as &#36;{s}. This requires very careful handling and we take it up later.</p>
+
+<p>For the present , let us not tamper with the DTD. or the web.xml file.</p>
+
+<p>In the next part of this tutorial, we study the tags available in the JSTL-core library.</p>
+</div>
+
+<div class="sectionHeading">CORE TAGS IN  JSTL</div>
+<div class="section">
+<p>[ In the second part of this tutorial on JSTL, the author explains how the tags in the core-group can be used in JSP pages, with a number of simple  examples.]</p>
+
+
+<p>We are now ready to  experiment with all the tags in the core library. The core tags have the following uniform  uri:</p>
+
+<p>http://java.sun.com/jstl/core</p>
+
+<p>(In the book by Hans Bergsten  titled,"Java Server Pages" ( third edition), (OReilly pub)the uri is consistently given as : 'http://java.sun.com/jsp/jstl/core'.It looks as if there has been some change in specification and grammar, after it was published. This appears to be wrong as  the server threw   exception. The correct uri is : 'http://java.sun.com/jstl/core'.) </p>
+
+<p>The prefix is  �c:�</p>
+
+<p>The following tags are available in the �core� library. ( Remember them as a dozen!).</p>
+
+<ul>
+	<li>&lt;c:set</li>
+	<li> &lt;c:out</li>
+	<li> &lt;c:if  test= �   </li>
+	<li> &lt;c:choose,  &lt;c:when , &lt;c:otherwise</li>
+	<li> &lt;c:forEach</li>
+	<li> &lt;c:forTokens</li>
+	<li> &lt;c:import</li>
+	<li> &lt;c:url</li>
+	<li> &lt;c:redirect</li>
+	<li> &lt;c:param</li>
+ </ul>
+
+<p>We will now see simplest illustrations for the above tags.There are a dozen demos, to bring out the features of each of these tags.</p>
+
+<br/><span class="exampleHeading">Example 1</span>
+
+<p>demo1.jsp  uses   &lt;c:set &  &lt;c:out    tags.<br/>
+We create demo1.jsp  as: e:\tomcat5\webapps\root\demo1.jsp</p>
+
+<pre class="decorated"><code><b>demo1.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c"  uri="http://java.sun.com/jstl/core"  %>
+&lt;html>
+&lt;body bgcolor=lightblue>
+    &lt;form  method=post  action="demo1.jsp">
+        NAME &lt;input  type=text  name="text1">&lt;br>
+        PLACE&lt;input  type=text  name="text2">&lt;br>
+        &lt;input type=submit>
+    &lt;/form>
+    NAME:&lt;c:out    value="&#36;{param.text1}"  />&lt;br>
+    PLACE:&lt;c:out   value="&#36;{param.text2}"  />
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>In all the previous examples, we invoked the JSP file through a html  file. But, in demo1.jsp, we are  posting the page to itself.( in asp.net style!).( but there is no 'retention of data' , unlike asp.net).</p>
+
+<p>We start Tomcat5, and type the url as:  �http://localhost:8080/demo1.jsp�.  in the browser.</p>
+
+<p>We get a form with two text boxes and a submit button. We fill up the textboxes with name and place and submit.The demo1.jsp executes and displays the  values entered by the user.due to the JSTL tags: &lt;c:out value=&#36;{param.text1}"/> etc.</p>
+
+<span class="exampleHeading">Example 2</span>
+
+<p>The second example is very important. When the user enters data in a number of fields, it is tedious to collect the data and transfer it to jsp page for processing. In our example, we are collecting data about a player,  such as his name, place and game. We can have much more but we are restricting for space considerations. JSP has an action tag , known as 'jsp:setProperty'. Using this along with a standard javabean, we can extract data and transfer it to our program in a single step.</p>
+
+<p>The syntax is</p>
+
+<pre class="decorated"><code>
+&lt;jsp:useBean id="bean1"  class="ourbeans.player">
+    &lt;jsp:setProperty name="bean1"  property="*"/>
+&lt;/jsp:useBean>
+</code></pre>
+
+<p>( the * sign denotes 'all').</p>
+
+<p>But, we should first create the 'player ' bean with all the attributes and getter & setter methods, as shown:</p>
+
+<pre class="decorated"><code><b>player.java</b>
+
+package ourbeans;
+
+public class Player {
+    private String name;
+    private String place;
+    private String game;
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getPlace() {
+        return place;
+    }
+    public void setPlace(String place) {
+        this.place = place;
+    }
+    public String getGame() {
+        return game;
+    }
+    public void setGame(String game) {
+        this.game = game;
+    }
+}</code></pre>
+<p>In demo2.jsp, we collect the data and then display  the data entered by the user.
+
+Note that instead of {param.text1}, we are using {bean1.name}. We should carefully name the html form controls with the corresponding attribute names given in the bean. We cannot name the controls as 'text1' etc, now!</p>
+
+&lt;c:out value="&#36;{bean1.name}"   />&lt;br/>
+&lt;c:out value="&#36;{bean1.place}"  />&lt;br/>
+&lt;c:out value="&#36;{bean1.game}"   />&lt;br/>
+
+<pre class="decorated"><code><b>demo2.jsp</b>
+
+&lt;%@ page contentType="text/html"%>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core"%>
+
+&lt;html>
+&lt;body>
+&lt;form method=post action="demo2.jsp">
+&lt;jsp:useBean id="bean1" class="ourbeans.player">
+    &lt;jsp:setProperty name="bean1" property="*"/>
+&lt;/jsp:useBean>
+
+Name &lt;input type=text name="name">&lt;br/>
+Place &lt;input type=text name="place">&lt;br/>
+Game &lt;input type=text name="game">&lt;br/>
+
+&lt;input type=submit>
+&lt;/form>
+
+Name: &lt;c:out value="&#36;{bean1.name}"/>&lt;br/>
+Place: &lt;c:out value="&#36;{bean1.place}"/>&lt;br/>
+Game: &lt;c:out value="&#36;{bean1.game}"/>
+&lt;/body>
+&lt;/html>
+</code></pre>
+
+<p>Once again, it will be noticed that there is no java code in this example, as everything is being done by tags, only.</p>
+
+<br/><span class="exampleHeading">Example 3 - Condition Tags</span>
+<p>We are now ready to take up examples for 'condition'  tags. There are two types of 'condition tags': namely, &lt;c:if>   &  &lt;c:choose>.
+</p>
+
+<p>In the third demo, we learn how to use the &lt;c:if  tag.</p>
+
+<pre class="decorated"><code><b>demo3.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;html>
+&lt;body bgcolor=lightblue>
+&lt;form method=post action=demo3.jsp>
+    &lt;select name="combo1">
+        &lt;option value="sam">sam
+        &lt;option value="tom">tom
+    &lt;/select>
+    &lt;input type=submit>
+&lt;/form>
+&lt;c:set var="s" value="&#36;{param.combo1}" />
+&lt;c:out value="&#36;{s}" />
+&lt;br>
+&lt;c:if test="&#36;{s eq 'sam' }" >
+    &lt;c:out value="Good Morning...SAM!" />
+&lt;/c:if>
+&lt;c:if test="&#36;{s == 'tom'}" >
+    &lt;c:out value=" How Are You?....TOM!" />
+&lt;/c:if>
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>There is a combo with two options, namely 'sam' and 'tom'. If the user selects 'sam' and submits the form, he gets 'GoodMorning ...SAM!". If he selects 'tom' instead, he gets 'How are you..TOM?'.</p>
+
+ <p>The above code is no �Rocket-Science� as American  authors say!But , if we are careless  in typing the names �sam� or �tom� in the test condition, we could spend hours together , trying to coax this code into functioning! We should not leave space after the single quote  in the 'test expression'. Second point worth noting in the above example is that we can use either == ( double equal to) or eq  to test equality.</p>
+
+<br/><span class="exampleHeading">Example 4 - c:choose</span>
+<p>The syntax is:</p>
+
+<pre><code>&lt;c:choose>
+    &lt;c:when test=" ">
+        something
+    &lt;/c:when>
+    &lt;c:otherwise>
+        something
+    &lt;/c:otherwise>
+&lt;/c:choose>
+</code></pre>
+
+The peculiarity to be noted here is that unlike &lt;c:if , where we had to explicitly  use &lt;c:out for printing , no such &lt;c:out has been used here., and yet the result is displayed,
+because 'choose' includes 'displaying'..
+
+<pre class="decorated"><code><<b>demo4.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;html>
+&lt;body bgcolor=lightblue>
+&lt;form method=post action="demo3.jsp">
+    &lt;select name="combo1">
+        &lt;option value="1">1 &lt;/option>
+        &lt;option value="2">2 &lt;/option>
+        &lt;option value="3">3 &lt;/option>
+        &lt;option value="4">4 &lt;/option>
+        &lt;option value="5">5 &lt;/option>
+        &lt;option value="7">7 &lt;/option>
+    &lt;/select>
+    &lt;input type=submit>
+&lt;/form>
+&lt;c:set var="s" value="&#36;{param.combo1}" />
+Today is
+&lt;br>
+&lt;font size=24 color=red>
+&lt;c:choose>
+    &lt;c:when test="&#36;{s==1}">Sunday &lt;/c:when>
+    &lt;c:when test="&#36;{s==2}">Monday&lt;/c:when>
+    &lt;c:when test="&#36;{s==3}">Tuesday&lt;/c:when>
+    &lt;c:when test="&#36;{s==4}">Wednesday&lt;/c:when>
+    &lt;c:when test="&#36;{s==5}">Thursday&lt;/c:when>
+    &lt;c:otherwise>
+        select between 1 & 5
+    &lt;/c:otherwise>
+&lt;/c:choose>
+&lt;/body>
+&lt;/html></code></pre>
+
+ <p>When we choose '7', "select between 1 & 5 " will be displayed!</p>
+
+<br/><span class="exampleHeading">Example 5 - Iteration c:forEach</span>
+ <p>We are familiar with the 'for-each' construct.
+JSTL's 'for-each'  also has the same functionality.
+  In the following example, we have a String array.  named as 'colors'.
+   By using the &lt;c:forEach> tag, we iterate through the array and display the values.</p>
+
+<pre><code><b>demo5.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;% pageContext.setAttribute("colors",
+new String[] {"red","green","blue","orange","black"} ); %>
+&lt;table>
+    &lt;c:forEach var="n" items="&#36;{colors}" varStatus="a">
+    &lt;tr>
+        &lt;td> &lt;c:out value="&#36;{a.index}" /> &lt;/td>
+        &lt;td> &lt;c:out value="&#36;{a.count}" /> &lt;/td>
+        &lt;td> &lt;c:out value="&#36;{a.first}" /> &lt;/td>
+        &lt;td> &lt;c:out value="&#36;{a.last}" /> &lt;/td>
+        &lt;td> &lt;c:out value="&#36;{a.current}" /> &lt;/td>
+    &lt;tr>
+    &lt;/c:forEach>
+&lt;/table>
+<code></pre>
+<p>We get the following display, when we execute the program.</p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
+ style='margin-left:1.15pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:dashed windowtext 1.0pt;mso-padding-alt:0in 5.4pt 0in 5.4pt'>
+
+ <tr style='mso-yfti-irow:0'>
+  <td width=15 valign=top style='width:11.25pt;border:solid windowtext 1.0pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>0 <o:p></o:p></span></p>
+  </td>
+  <td width=14 valign=top style='width:10.5pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>1 <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>true
+  <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+  </td>
+  <td width=45 valign=top style='width:33.75pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>red <o:p></o:p></span></p>
+
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=15 valign=top style='width:11.25pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>1 <o:p></o:p></span></p>
+  </td>
+  <td width=14 valign=top style='width:10.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>2 <o:p></o:p></span></p>
+
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+  </td>
+  <td width=45 valign=top style='width:33.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>green
+  <o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=15 valign=top style='width:11.25pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>2 <o:p></o:p></span></p>
+  </td>
+  <td width=14 valign=top style='width:10.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>3 <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+
+  </td>
+  <td width=45 valign=top style='width:33.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>blue
+  <o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td width=15 valign=top style='width:11.25pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>3 <o:p></o:p></span></p>
+
+  </td>
+  <td width=14 valign=top style='width:10.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>4 <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+  </td>
+  <td width=45 valign=top style='width:33.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>purple
+  <o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4;mso-yfti-lastrow:yes'>
+  <td width=15 valign=top style='width:11.25pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>4 <o:p></o:p></span></p>
+  </td>
+  <td width=14 valign=top style='width:10.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>5 <o:p></o:p></span></p>
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>false
+  <o:p></o:p></span></p>
+
+  </td>
+  <td width=33 valign=top style='width:24.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>true
+  <o:p></o:p></span></p>
+  </td>
+  <td width=45 valign=top style='width:33.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>black
+  <o:p></o:p></span></p>
+  </td>
+ </tr>
+
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+<p>&lt;c:forEach> action tag contain the following attribute list:</p>
+
+
+<pre><code>items       :  the collection of items like String[]
+var         :  a symbolic name for the collection
+begin       :  the starting index of iteration
+end         :  the ending index of iteration
+step        :  incremental step
+varStatus   :  symbolic name for current status.</code></pre>
+
+<p>If we assign the symbolic name 'a' for the status, we are able to access its properties such as index, count, whether it is first item, whether it is last item and the current value.</p>
+
+<br/><span class="exampleHeading">Example 6 - c:forEach cont.</span>
+<p>Demo6 also deals with iteration tag. In the following example, the iteration starts at value 3 and ends at value 8. It displays the values of n in each iteration. Each iteration increments the value of n automatically by 1, if step is  not specified.</p>
+
+<pre class="decorated"><code><b>demo6.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;c:forEach var="n" begin="3" end="8" >
+    &lt;c:out value="&#36;{n}" /> &lt;br>
+&lt;/c:forEach></code></pre>
+
+<p>Resulting html display for demo6.jsp: 3,4,5,6,7,8</p>
+
+<br/><span class="exampleHeading">Example 7 - c:forTokens</span>
+<p>Demo7 deals with JSTL's 'forTokens' tag.&lt;c:forTokens>, which iterates over a string of tokens separated by a set of delimiters like the stringTokenizer class in Java.</p>
+
+<b>demo7.jsp</b>
+<pre class="decorated"><code>&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;c:set var="s" value="SAM,DELHI,MCA,24,90" />
+&lt;html>
+&lt;body>
+&lt;table border="1">
+&lt;tr>
+    &lt;th>Name&lt;/th>
+    &lt;th>Place&lt;/th>
+    &lt;th>Degree&lt;/th>
+    &lt;th>Age&lt;/th>
+    &lt;th>Mark&lt;/th>
+&lt;/tr>
+&lt;tr>
+    &lt;c:forTokens items="&#36;{s}" delims="," var="token" >
+        &lt;td>&lt;c:out value="&#36;{token}" />&lt;/td>
+    &lt;/c:forTokens>
+&lt;/tr>
+&lt;/table>
+&lt;br>
+&lt;/font>
+&lt;/body>
+&lt;/html></code></pre>
+<p>Resulting HTML displayed:</p>
+<pre><code>
+NAME    PLACE   DEGREE   AGE     MARK
+SAM     DELPHI  MCA      24      90
+</code></pre>
+<p>The essential attributes of 'forTokens' tag are:</p>
+
+Items:  String  to tokenize<br/>
+Delims: The delimiter characters that separate the tokens of   the string.<br/>
+<br/>
+
+<br/><span class="exampleHeading">Example 8 - c:import</span>
+<p>Demo8 deals with URL-Related actions. &lt;c:import>action tag imports the
+conent of a URL-based resource and provides a simple way to access URL-based resources that can either be included or processed within the JSP.</p>
+
+<p>In the following example,the import action tag imports the content of welcome.htm file here.So it displays the contents of demo8.jsp and welcome.htm.</p>
+
+<pre><code>// welcome.htm
+&lt;html>
+&lt;body>
+WELCOME
+&lt;br>
+&lt;/body>
+&lt;/html></code></pre>
+
+<pre class="decorated"><code><b>demo8.jsp</b>
+
+&lt;%@ taglib  prefix="c"  uri="http://java.sun.com/jstl/core" %>
+&lt;c:import url="welcome.htm"/>
+&lt;c:out   value="to our web-site!" /></code></pre>
+
+<br/><span class="exampleHeading">Example 9 - c:url</span>
+
+<p>In demo9 we discuss the &lt;c:url> action tag.</p>
+
+<p>&lt;c:url> prints the value  of URL.  It is easier to construct the hyperlinks. It is useful for session preservation (URL-Encoding).</p>
+
+<p>In the following example,we use &lt;c:url> to make a link to another html file. When we execute demo9, we get a link , with text 'send'.
+When we click on the link, we are taken to welcome.htm.</p>
+
+<pre class="decorated"><code><b>demo9.jsp</b>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;a href="&lt;c:url value="http://localhost:8080/welcome.htm/>">send&lt;/a></code></pre>
+
+<br/><span class="exampleHeading">Example 10 - c:redirect</span>
+
+<p>demo10 deals with &lt;c:redirect> action tag.</p>
+
+<p>This tag forwards the browser to the specified URL.</p>
+
+<b>demo10.jsp</b>
+
+<pre class="decorated"><code>&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;c:redirect url="http://localhost:8080/welcome.htm /></code></pre>
+
+<br/><span class="exampleHeading">Example 11 - c:param</span>
+<p>Finally, &lt;c:param> tag is useful to send some parameter value to the page to which redirect occurs. In our example, the code redirects to sample.jsp, but it takes the param named 'a'
+with <code>value='SAM'</code>, to the redirected page.</p>
+And, the sample.jsp accepts this param and prints it.  <code>&lt;c:out value="&#36;{param.name1}"/></code>
+
+<pre class="decorated"><code>
+<b>demo11.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core"  %>
+&lt;c:redirect  url="http://localhost:8080/jstldemos/
+     core/sample.jsp" >
+&lt;c:param name="name1" value="SAM"/>
+&lt;/c:redirect>
+<code></pre>
+( in a different file )
+<pre class="decorated"><code><b>sample.jsp</b>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;c:out value="&#36;{param.name1}"/></code></pre>
+
+<p>And to end our whirlwind tour of core-tags in JSTL, here is a demo which mixes EL of JSP-2(Expression Language of JSTL) with 'Expression' (also known as request-time Expression ) of JSP1.2.</p>
+
+<pre class="decorated"><code><b>demo12.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core"  %>
+JSTL  welcomes &lt;br>
+&lt;c:out   value="&#36;{param.text1}"   />
+&lt;br>
+JSP Expression welcomes
+&lt;%=request.getParameter("text1") %></code></pre>
+
+<p>In the next and third part of this tutorial, we will learn about xml tags in JSTL.</p>
+</div>
+
+<div class="sectionHeading">JSTL &  XML-TAGS</div>
+<div class="section">
+<p>In this third part of the tutorial on JSTL, the author explains the use of xml tags of the JSTL and shows their wonderful simplicity ,ease of use and raw power.</p>
+
+     <p> No one can  have any second opinion about the elegance of xml tags in JSTL. If the readers have been following the earlier installments of this J2EE series of tutorials, they would have come across JAXP,DOM,SAX ,JDOM and such terms, and it may  have been none too easy to learn. But the xml tags in JSTL , make XML processing and even Transformation , a cinch! And ,we now proceed to study them.</p>
+
+   <p>Making our study  even easier, many of the xml tags in JSTL , are very much similar to the 'core' tags. For example, just like
+<code>&lt;c:out>, we have &lt;x:out>.</code></p>
+<p>Similarly,
+<code>&lt;x:forEach>, &lt;x:if>,&lt;x:when>  etc.</code></p>
+
+<p>So, if we have understood the syntax of the 'core'; tags, it will not be difficult to use the 'xml' tags.</p>
+
+ <p>All the following  examples use the books.xml file.It contains 'elements' like 'title' and 'author':</p>
+ <pre class="decorated"><code>
+<b>books.xml</b>
+
+&lt;?xml version="1.0" ?>
+&lt;books>
+    &lt;book>
+         &lt;title>cobol&lt;/title>
+         &lt;author>roy&lt;/author>
+    &lt;/book>
+    &lt;book>
+         &lt;title>java&lt;/title>
+         &lt;author>herbert&lt;/author>
+    &lt;/book>
+    &lt;book>
+         &lt;title>c++&lt;/title>
+         &lt;author>robert&lt;/author>
+    &lt;/book>
+    &lt;book>
+         &lt;title>coldfusion&lt;/title>
+         &lt;author>allaire&lt;/author>
+    &lt;/book>
+    &lt;book>
+         &lt;title>xml unleashed&lt;/title>
+         &lt;author>morrison&lt;/author>
+    &lt;/book>
+    &lt;book>
+         &lt;title>jrun&lt;/title>
+         &lt;author>allaire&lt;/author>
+    &lt;/book>
+&lt;/books>
+</code></pre>
+
+<br/><span class="exampleHeading">XML Demos</span>
+
+<p>The following program reads the xml file using 'forEach' tag and displays the title and author of   each book..</p>
+<p>The syntax: <code>&lt;x:forEach var="n" select="&#36;doc/books/book"></code>
+is used to select the elements from the xml file. <code>&lt;x:out select="&#36;n/title"/></code>
+is used to print the elements of the xml file. We begin by   importing the reference to the XML file to be parsed. <code>&lt;c:import url="books.xml" var="url" /></code></p>
+
+ <p>We have given a symbolic name for this file as 'url'.Next we ask  the program to parse this XML file.The resulting tree is given a symbolic name as 'doc'.
+<code>&lt;x:parse  xml="&#36;{url}" var="doc" /></code></p>
+
+<p>In the next step, we direct the program to
+select each title and each author in the XPATH
+expression &#36;doc/books/book. If we refer to the xml file , we find that the root element of the document is 'books'. Inside this, we have 'book'.So, XPATH can be thought of as just a file hierarchy. Just like &lt;c:out, we have &lt;x:out!</p>
+
+<pre class="decorated"><code><b>demo1.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib  prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib  prefix="c" >uri="http://java.sun.com/jstl/xml" %>
+&lt;html>
+&lt;body>
+ &lt;c:import url="books.xml" var="url" />
+ &lt;x:parse xml="&#36;{url}" var="doc" />
+ -----------------------------------------------&lt;br>
+ &lt;x:forEach var="n" select="&#36;doc/books/book">
+     &lt;x:out select="&#36;n/title" />
+     &lt;br>
+     &lt;x:out select="&#36;n/author" />
+     &lt;br>
+     ========
+     &lt;br>
+ &lt;/x:forEach>
+&lt;/body>
+&lt;/html></code></pre>
+  <p>Magically, we have parsed a given XML document and extracted information, without any mention about DOM,SAX and such  words., atall!Wonderful!As a famous author would say, 'anything that makes my job easier, I like!'.
+ When we execute  the 'program', we get the following result.</p>
+
+<p>(Result for executing demo1.jsp)</p>
+<pre><code>==========================
+cobol
+roy
+==========
+java
+herbert
+==========
+c++
+robert
+==========
+coldfusion
+allaire
+==========
+xmlunleashed
+morrison
+==========
+jrun
+allaire
+==========</code></pre>
+
+<p>The following program (demo2)displays the books and authors of xml file  in table format.</p>
+
+<pre class="decorated"><code><b>demo2.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib prefix="c" >uri="http://java.sun.com/jstl/xml" %>
+&lt;html>
+&lt;body>
+&lt;c:import url="books.xml" var="url" />
+&lt;x:parse xml="&#36;{url}" var="doc" />
+&lt;table border=1>
+    &lt;th>
+        tr>
+            &lt;td>title&lt;/td>
+            &lt;td>author&lt;/td>
+        &lt;/tr>
+    &lt;/th>
+    &lt;x:forEach var="n" select="&#36;doc/books/book">
+        &lt;tr>
+            &lt;td> &lt;x:out select="&#36;n/title" />&lt;/td>
+            &lt;td> &lt;x:out select="&#36;n/author" />&lt;/td>
+        &lt;/tr>
+    &lt;/x:forEach>
+&lt;/table>
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>Results of Demo 2:</p>
+<pre><code>
+title           author
+-----           ------
+cobol           roy
+java            herbert
+c++             robert
+coldfusion      allaire
+xml unleashed   morrison
+jrun            allaire
+</code></pre>
+
+<p>demo3 deals with the selection of particular book's author from the xml file ,when we give the title, with the help of <x:if> action tag.The title is choosen from combo box in demo2.htm file and submitted.We get a display of the selected title and its author.
+ Think of this as an sql query like
+"select * from table1 where title='jrun'"</p>
+
+<pre class="decorated"><code><b>demo3.htm</b>
+
+&lt;html>
+&lt;body>
+ SELECT THE TITLE.&lt;BR>
+ YOU WILL GET TITLE & AUTHOR.
+&lt;form method=post action="demo3.jsp">
+    &lt;select name="combo1">
+        &lt;option value="xml unleashed">xml
+        &lt;option value="c++">c++
+        &lt;option value="coldfusion">cold fusion
+        &lt;option value="java">java
+        &lt;option value="cobol">cobol
+    &lt;/select>
+    &lt;input type=submit>
+&lt;/form>
+&lt;/body>
+&lt;/html></code></pre>
+
+<pre class="decorated"><code><b>demo3.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/xml" %>
+&lt;html>
+&lt;body>
+ &lt;c:import url="books.xml" var="url" />
+ &lt;x:parse xml="&#36;{url}" var="doc" />
+ &lt;c:set var="s" value="&#36;{param.combo1}"/>
+------
+&lt;x:forEach var="n" select="&#36;doc/books/book" >
+    &lt;x:if select="&#36;n/title=&#36;s" >
+        &lt;x:out select="&#36;n/title" />
+        &lt;br>
+        &lt;x:out select="&#36;n/author" />
+        &lt;br>
+    &lt;/x:if>
+&lt;/x:forEach>
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>demo4 is a simple variation on the same theme. In this case, the user selects the author name from the combo and any books by that author are displayed, due to the code.
+ It will be noted that 'allaire' has two books to his credit and so if we choose 'allaire' in the combo,his two books are displayed.If 'haris' is chosen, we should display the message that it is yet to be published as there is no such entry in the xml file. But there is no 'if-else' construct and so we improvise.
+We have created a variable 'a' and assigned the value 'ok' to it. If there is no author to match the user's selection, the conditional block is ignored and 'a' will not be 'ok'.
+From this, we conclude that 'the book is not ready'.</p>
+
+<pre class="decorated"><code><b>demo4.htm</b>
+
+&lt;html>
+&lt;body>
+Select name of author & view his books&lt;br>
+&lt;form method=post action="demo4.jsp">
+    &lt;select name="combo1">
+        &lt;option value="morrison">morrison
+        &lt;option value="robert">robert
+        &lt;option value="allaire">allaire
+        &lt;option value="herbert">herbert
+        &lt;option value="roy">roy
+        &lt;option value="haris">haris
+    &lt;/select>
+    &lt;input type=submit>
+&lt;/form>
+&lt;/body>
+&lt;/html></code></pre>
+
+<pre class="decorated"><code><b>demo4.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/xml" %>
+&lt;html>
+&lt;body>
+&lt;c:import url="books.xml" var="url" />
+    &lt;x:parse xml="&#36;{url}" var="doc" />
+    &lt;c:set var="s" value="&#36;{param.combo1}"/>
+    &lt;x:forEach var="n" select="&#36;doc/books/book" >
+        &lt;x:if select="&#36;n/author=&#36;s" >
+            &lt;c:set var="a" value="ok" />
+            &lt;x:out select="&#36;n/title" />
+             &lt;br>
+             &lt;x:out select="&#36;n/author" />
+             &lt;br>
+        &lt;/x:if>
+    &lt;/x:forEach>
+    &lt;c:if test="&#36;{a!='ok'}" />
+         &lt;c:out value="not yet ready!" />
+    &lt;/c:if>
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>In demo5 also, we display the title & author for a given title, but we now
+use &lt;x:choose, &lt;x:when logic. This is similar to &lt;c:choose, &lt;c:when &
+&lt;c:otherwise logic in the core library.</p>
+
+<pre class="decorated"><code><b>demo5.htm</b>
+
+&lt;html>
+&lt;body>
+SELECT THE TITLE.&lt;BR>
+YOU WILL GET TITLE & AUTHOR.
+&lt;form method=post action="demo5.jsp">
+    &lt;select name="combo1">
+        &lt;option value="xml unleashed">xml
+        &lt;option value="c++">c++
+        &lt;option value="coldfusion">cold fusion
+        &lt;option value="java">java
+        &lt;option value="cobol">cobol
+    &lt;/select>
+    &lt;input type=submit>
+&lt;/form>
+&lt;/body>
+&lt;/html></code></pre>
+
+<pre class="decorated"><code><b>demo5.jsp</b>
+
+&lt;%@ page contentType="text/html" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/xml" %>
+&lt;html>
+&lt;body>
+&lt;c:import url="books.xml" var="url" />
+&lt;c:set var="s" value="&#36;{param.combo1}" />
+&lt;x:parse xml="&#36;{url}" var="doc" />
+&lt;x:forEach var="n" select="&#36;doc/books/book">
+    &lt;x:choose>
+        &lt;x:when select="&#36;n/title=&#36;s">
+            &lt;c:set var="m" value="ok" />
+            &lt;x:out select="&#36;n/title" />
+        &lt;/x:when>
+        &lt;x:otherwise>
+        &lt;/x:otherwise>
+    &lt;/x:choose>
+&lt;/x:forEach>
+&lt;c:if test="&#36;{m!='ok'}">
+    &lt;c:out value="no such book"/>
+&lt;/c:if>
+&lt;/body>
+&lt;/html></code></pre>
+
+<pre><code>Result
+======
+--------------------
+title:
+c++
+--------------------
+c++
+robert
+========================-
+title:
+VB
+--------------------
+no such book</code></pre>
+
+<p>In demo6 , we see XSLtransform using JSTL.
+We'll be using
+students.xml and xsl1.xsl  as shown below the demo. Just three lines and DONE!</p>
+<pre class="decorated"><code>
+<b>Demo 6</b>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib prefix="x" uri="http://java.sun.com/jstl/xml" %>
+
+ &lt;c:import url="students.xml" var="url" />
+ &lt;c:import url="xsl1.xsl" var="xsl" />
+ &lt;x:transform xml="&#36;{url}" xslt="&#36;{xsl}" />
+</code></pre>
+
+<pre class="decorated"><code>// students.xml
+&lt;?xml version="1.0"?>
+&lt;students>
+    &lt;student>
+        &lt;name>Thomas&lt;/name>
+        &lt;place>Delhi&lt;/place>
+        &lt;number>1111&lt;/number>
+        &lt;mark>78&lt;/mark>
+    &lt;/student>
+    &lt;student>
+        &lt;name>David&lt;/name>
+        &lt;place>Bombay&lt;/place>
+        &lt;number>4444&lt;/number>
+        &lt;mark>90&lt;/mark>
+    &lt;/student>
+    &lt;student>
+        &lt;name>Mathew&lt;/name>
+        &lt;place>Bangalore&lt;/place>
+        &lt;number>5555&lt;/number>
+        &lt;mark>92&lt;/mark>
+    &lt;/student>
+    &lt;student>
+        &lt;name>John&lt;/name>
+        &lt;place>Hyderabad&lt;/place>
+        &lt;number>6666&lt;/number>
+        &lt;mark>72&lt;/mark>
+    &lt;/student>
+&lt;/students></code></pre>
+
+<pre class="decorated"><code>//xsl1.xsl
+&lt;?xml version="1.0"?>
+&lt;xsl:stylesheet
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    version="1.0">
+    &lt;xsl:template match="/">
+    &lt;html>
+    &lt;body>
+        &lt;table border="2" bgcolor="yellow">
+        &lt;tr>
+            &lt;th>Name&lt;/th>
+            &lt;th>Place&lt;/th>
+            &lt;th>Number&lt;/th>
+            &lt;th>Mark&lt;/th>
+        &lt;/tr>
+        &lt;xsl:for-each select="students/student">
+            &lt;tr>
+                &lt;td>&lt;xsl:value-of select="name"/> &lt;/td>
+                &lt;td>&lt;xsl:value-of select="place"/> &lt;/td>
+                &lt;td>&lt;xsl:value-of select="number"/> &lt;/td>
+                &lt;td>&lt;xsl:value-of select="mark"/> &lt;/td>
+            &lt;/tr>
+        &lt;/xsl:for-each>
+        &lt;/table>
+    &lt;/body>
+    &lt;/html>
+    &lt;/xsl:template>
+&lt;/xsl:stylesheet></code></pre>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
+ style='margin-left:1.15pt;border-collapse:collapse;mso-table-layout-alt:fixed;
+ border:none;mso-border-alt:dashed windowtext 1.5pt;mso-padding-alt:0in 5.4pt 0in 5.4pt'>
+ <tr style='mso-yfti-irow:0'>
+  <td width=57 valign=top style='width:42.75pt;border:solid windowtext 1.0pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><b><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Name<o:p></o:p></span></b></p>
+
+  </td>
+  <td width=74 valign=top style='width:55.5pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><b><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Place<o:p></o:p></span></b></p>
+  </td>
+  <td width=60 valign=top style='width:45.0pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><b><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Number<o:p></o:p></span></b></p>
+  </td>
+  <td width=46 valign=top style='width:34.5pt;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><b><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Mark<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td width=57 valign=top style='width:42.75pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Thomas<o:p></o:p></span></p>
+  </td>
+  <td width=74 valign=top style='width:55.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Delhi<o:p></o:p></span></p>
+  </td>
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>1111<o:p></o:p></span></p>
+  </td>
+  <td width=46 valign=top style='width:34.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>78<o:p></o:p></span></p>
+
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td width=57 valign=top style='width:42.75pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>David<o:p></o:p></span></p>
+  </td>
+  <td width=74 valign=top style='width:55.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Bombay<o:p></o:p></span></p>
+
+  </td>
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>4444<o:p></o:p></span></p>
+  </td>
+  <td width=46 valign=top style='width:34.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>90<o:p></o:p></span></p>
+  </td>
+ </tr>
+
+ <tr style='mso-yfti-irow:3'>
+  <td width=57 valign=top style='width:42.75pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Mathew<o:p></o:p></span></p>
+  </td>
+  <td width=74 valign=top style='width:55.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Bangalore<o:p></o:p></span></p>
+  </td>
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>5555<o:p></o:p></span></p>
+  </td>
+  <td width=46 valign=top style='width:34.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>92<o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4;mso-yfti-lastrow:yes'>
+  <td width=57 valign=top style='width:42.75pt;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .75pt;mso-border-alt:
+  solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>John<o:p></o:p></span></p>
+  </td>
+  <td width=74 valign=top style='width:55.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>Hyderabad<o:p></o:p></span></p>
+  </td>
+  <td width=60 valign=top style='width:45.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>6666<o:p></o:p></span></p>
+
+  </td>
+  <td width=46 valign=top style='width:34.5pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .75pt;mso-border-left-alt:solid windowtext .75pt;
+  mso-border-alt:solid windowtext .75pt;padding:0in .75pt 0in .75pt'>
+  <p class=MsoNormal style='margin-right:4.5pt;text-align:justify;mso-pagination:
+  none;tab-stops:427.5pt;mso-layout-grid-align:none;text-autospace:none'><span
+  style='font-family:"Courier New";mso-bidi-font-family:"Times New Roman"'>72<o:p></o:p></span></p>
+  </td>
+ </tr>
+</table>
+<p>That completes our study of 'xml' tags in JSTL.We now move ahead to the fourth and final part of the present tutorial, dealing with 'sql' tags in JSTL.</p>
+</div>
+
+<div class="sectionHeading">Part 4 - JSTL SQL Tags</div>
+<div class="section">
+ <p>In this fourth & last part of the tutorial on JSTL,the author deals with the 'sql' tags in JSTL  and shows how they greatly simplify simple database operations like 'select' queries.  In another demo, common database operations like 'add','modify' , 'delete' & 'verify'also are dealt with. </p>
+
+ <p>The Struts community has ordained that JSP should be  strictly a 'view-technology', in the Model-View-Controller Architecture. According to Struts philosophy, JSP should not deal with Data-Accesss and such data access  should be done by 'Model' components only.( read 'beans'). JSTL , however, provides for sql tags, inspired by ColdFusion!  And , a few months back, the editor of 'Java Lobby' magazine was all admiration for the absolutely nice features of these sql tags, whatever, 'struts-fans' may say! Just as EJB may be 'overkill', except for really big Enterprise applications, Struts also may be  an unnecessary complication for small and medium level projects. In such cases, it is much more direct to provide for data access by the JSP itself, but using JSTL 'sql' tags.We take up these 'sql' tags in  this part of the tutorial.</p>
+
+ <p>Let us begin with 'sql.htm'. It just provides a simple form with just a textarea & submit button. Normally, queries by MIS department will be very complex and so we have provided a textarea for the 'select' query.After filling up the query, it is submitted and the corresponding query.jsp is invoked.</p>
+
+ <pre class="decorated"><code><b>query.htm</b>
+
+&lt;html>
+&lt;body>
+&lt;form method=post action="query.jsp">
+    &lt;textarea name='area1'  rows=10 cols=30>&lt;/textarea>
+    &lt;input type=submit>
+&lt;/form>
+&lt;/body>
+&lt;/html></code></pre>
+
+ <p>query.jsp is given below. In the standard jdbc code,we begin by asking for the availability of the driver.
+"<code>jdbc.odbc.JdbcOdbcDriver</code>". And then, we specify the URL of the database as
+ '<code>jdbc:odbc:telephone</code>'.</p>
+ -
+<p>Similarly, in JSTL also, we begin with
+&lt;sql:setDataSource tag.
+ It has attributes for 'driver' and 'url'.
+ We will refer to the database as 'db'.</p>
+
+<p>The next step is to collect the query typed in area1 by the user.
+<code>&lt;c:set var="s" value="&#36;{param.area1}" /></code>
+is used for this purpose.We also check up whether the query
+typed by the user has indeed been correctly received using
+<code>&lt;c:out value="&#36;{s}" /></code></p>
+
+
+<p>Next, the '&lt;sql:query' tag, takes
+three attributes., such as,
+symbolic name: var="query1"
+datasource="&#36;{db}
+sql="&#36;{s}
+The query result is then displayed in table form.It should be
+possible to follow the code now.In our example, we are having an Access db,
+with table1, having two fields, (name, place).
+registered with ODBC.</p>
+
+<pre class="decorated"><code><b>query.jsp</b>
+
+&lt;%@ taglib prefix="c" %>uri="http://java.sun.com/jstl/core"
+&lt;%@ taglib prefix="sql" %>
+uri="http://java.sun.com/jstl/sql"
+&lt;html>
+&lt;body>
+&lt;sql:setDataSource var="db"
+ driver="sun.jdbc.odbc.JdbcOdbcDriver"
+ url="jdbc:odbc:dbdemo" />
+&lt;c:set var='s' value="&#36;{param.area1}" />
+&lt;c:out value="&#36;{s}" /> &lt;br>
+&lt;sql:query var="query1" dataSource="&#36;{db}" sql="&#36;{s}" />
+&lt;table border="1">
+    &lt;c:forEach var="row" items="&#36;{query1.rows}" >
+    &lt;tr>
+        &lt;td> &lt;c:out value="&#36;{row.name}" />&lt;/td>
+        &lt;td> &lt;c:out value="&#36;{row.place}" />&lt;/td>
+    &lt;/tr>
+    &lt;/c:forEach>
+&lt;/table>
+&lt;/body>
+&lt;/html></code></pre>
+
+<p>In the second example,(dbeditor.htm & dbeditor.jsp) we provide a combo, with options such as:
+add, modify, remove and verify.
+In JSTL , we have a separate sql tag known as
+'&lt;sql:update' for 'add', 'modify' and 'remove' operations.
+When we want to verify, we must use' &lt;sql:query' tag, because, resultset will be returned.</p>
+
+<pre class="decorated"><code><b>dbeditor.htm</b>
+
+&lt;html>
+&lt;body bgcolor=lightgreen>
+    &lt;form method=post action="dbeditor.jsp">
+        &lt;input type=text name='text1'>name&lt;br>
+        &lt;input type=text name='text2'>number&lt;br>
+        &lt;input type=text name='text3'> criterion&lt;br>
+        &lt;select name=combo1>
+            &lt;option value="add">add
+            &lt;option value="delete">delete
+            &lt;option value="modify">modify
+            &lt;option value="verify">find
+        &lt;/select>
+        &lt;br>
+        &lt;input type=submit>
+    &lt;/form>
+&lt;/body>
+&lt;/html></code></pre>
+
+<pre class="decorated"><code><b>dbeditor.jsp</b>
+
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>
+&lt;%@ taglib prefix="c" uri="http://java.sun.com/jstl/sql" %>
+&lt;html>
+&lt;body>
+&lt;sql:setDataSource var="db"
+ driver="sun.jdbc.odbc.JdbcOdbcDriver"
+ url="jdbc:odbc:dbdemo" />
+&lt;c:set var='a' value='&#36;{param.text1}' />
+&lt;c:set var='b' value='&#36;{param.text2}' />
+&lt;c:set var='c' value='&#36;{param.text3}' />
+&lt;c:set var='d' value='&#36;{param.combo1}' />
+
+&lt;c:if test="&#36;{d == 'add'}" >
+    &lt;sql:update var="query1" dataSource="&#36;{db}"
+        sql="insert into table1 values&#36;{a}','&#36;{b}')" >
+    &lt;/sql:update>
+    &lt;c:out value="record added"/>
+&lt;/c:if>
+
+&lt;c:if test="&#36;{d == 'delete'}" >
+    &lt;sql:update var="query1" dataSource="&#36;{db}"
+        sql="delete from table1 where name='&#36;{a}'" >
+    &lt;/sql:update>
+    &lt;c:out value="record deleted"/>
+&lt;/c:if>
+
+&lt;c:if test="&#36;{d == 'modify'}" >
+    &lt;sql:update var="query1" dataSource="&#36;{db}"
+        sql="update table1 set table1.name='&#36;{a}',
+        table1.place='&#36;{b}' where
+        table1.name='&#36;{c}'" >
+        &lt;--sql should be typed in a single line -->
+    &lt;/sql:update>
+    &lt;c:out value="record modified"/>
+&lt;/c:if>
+
+&lt;c:if test="&#36;{d == 'verify'}" >
+    &lt;sql:query var="query1" dataSource="&#36;{db}"
+        sql="select * from table1 where name='&#36;{a}'" >
+    &lt;/sql:query>
+    &lt;table border="1">
+    &lt;c:forEach var="row" tems="&#36;{query1.rows}" >
+        &lt;c:set var="n" value="OK" />
+        &lt;tr>
+            &lt;td> &lt;c:out value="&#36;{row.name}" />&lt;/td>
+            &lt;td> &lt;c:out value="&#36;{row.place}" />&lt;/td>
+        &lt;/tr>
+    &lt;/c:forEach>
+    &lt;c:if test="&#36;{n != 'OK'}" >
+        &lt;c:out value="No such Records" />
+    &lt;/c:if>
+    &lt;/table>
+&lt;/c:if>
+&lt;/html>
+&lt;body></code></pre>
+
+</div>
+
+<div class="sectionHeading">Conclusion</div>
+<div class="section">
+<p>These are , afterall, the essentials. All else, are only, ornamental. Thus, it will be seen that the JCP has done a great job in creating really fine standard tags, for simplifying routine tasks. But, Java coders,
+have to take note that , their job as JSP coders, will be slowly eroded  by page-authors
+using JSTL!</p>
+</div>
+
+<div class="sectionHeading">Suggested Reeference Books</div>
+<div class="section">
+<p> 
+<ol>
+	<li>Pro  JSP by SIMON BROWN & OTHERS (A-Press) (Excellent material)</li>
+	<li>JavaServer Pages by Hans Bergsten ( Third Edition) (O'Reilly Press/SPD)</li>
+	<li>EARLY ADOPTER JSP Standard Tag Library by JAYSON FALKNER & OTHERS Wrox Press</li>
+	<li>JSTL in Action by SHAWN BAYERN (Manning/ DreamTech).</li>
+</ol> 
+</p>
+</div>
+           
+
+   

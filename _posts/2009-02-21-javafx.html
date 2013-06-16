@@ -1,0 +1,329 @@
+---
+title: JavaFX CRUD
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/1BtmVfw5wJwIAN12OSABnV">javafx-emp-crud.zip</a> NetBeans project.<br/>
+<a href="/javafxapp/Employee_Management_Application.jnlp" ><img src="/javafxapp/launch.gif" title="Click to Launch" border="0"></a>
+</div>
+<DIV class="author">Application and Lesson by Vijesh Aaniyamveetil</div>
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+<p>JavaFX is a new expressive scripting language from SUN for the RCP/RIA world and competes directly with FLEX, Silverlight etc. Instead of enhancing the existing RCP module Swing and carrying along the burden of preserving backward compatibility, the engineers of Java had decided to come up with new language that is compatible with and leverages the robustness of existing Java language. </p>
+<p>Though with the current release the JavaFX team concentrated on mainly graphic and video support rather than emulating Swing component sets, there are some limited built-in components for data centric applications. Besides it is also possible to use core Swing components within context of JavaFX application. In the future releases of JavaFX, first class components that are not available now (likes of JTable, JTree etc.), will be included. </p>
+<p>In this example a mix of JavaFX and Swing components are used to demonstrate the integration between them. The data layer and number of pages are same as that of other samples in this site. </p>
+<p>Since I am also new to JavaFX, the utilization of the JavaFX features may not very effective and there is room for improvement. I myself will try to improve it as I learn more about the language and you are also welcome to suggest improvements. </p>
+</div>
+<div class="sectionHeading">Prerequisites</div>
+<br />
+<div class="section">
+<p><strong style="mso-bidi-font-weight: normal">Java SE Development Kit (JDK):</strong> JDK 6 Update 7 minimum (JDK 6 Update 11 recommended)</p>
+<p><strong style="mso-bidi-font-weight: normal">NetBeans 6.5:</strong><span>&nbsp; </span><a href="http://www.netbeans.org/">http://www.netbeans.org/</a></p>
+<p><strong style="mso-bidi-font-weight: normal">JavaFX SDK 1.1:</strong> <a href="http://www.javafx.com/downloads/all.jsp">http://www.javafx.com/downloads/all.jsp</a></p>
+<p><strong style="mso-bidi-font-weight: normal">Basic JavaFX language knowledge:</strong> <span>&nbsp;</span><a href="http://www.javafx.com/learn/">http://www.javafx.com/learn/</a></p>
+<p><strong style="mso-bidi-font-weight: normal">Java Swing knowledge:</strong> <span>&nbsp;</span><a href="http://java.sun.com/docs/books/tutorial/uiswing/">http://java.sun.com/docs/books/tutorial/uiswing/</a></p>
+<p><strong style="mso-bidi-font-weight: normal">Operating systems:</strong> Microsoft Windows XP with Service Pack 3 or Windows Vista, Macintosh OS X 10.4.10 minimum</p>
+</div>
+<div class="sectionHeading">About the sample application</div>
+<br />
+<div class="section">
+<div style="MARGIN: 0in 0in 10pt">This example is a JavaFX implementation of Employee CRUD model used in all the other examples in this site. The features available are:</div>
+<ol style="MARGIN-TOP: 0in" type="1">
+    <li style="MARGIN: 0in 0in 10pt">Display the list of employees </li>
+    <li style="MARGIN: 0in 0in 10pt">Create new employees </li>
+    <li style="MARGIN: 0in 0in 10pt">Edit existing employee details </li>
+    <li style="MARGIN: 0in 0in 10pt">Delete existing employee </li>
+    <li style="MARGIN: 0in 0in 10pt">Change the background image at runtime </li>
+</ol>
+<div style="MARGIN: 0in 0in 10pt">&nbsp;</div>
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Client Layer</span></strong></div>
+<table style="BORDER-RIGHT: medium none; BORDER-TOP: medium none; FONT-SIZE: 12px; MARGIN: auto auto auto 5.4pt; BORDER-LEFT: medium none; BORDER-BOTTOM: medium none; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; BORDER-COLLAPSE: collapse" cellspacing="0" cellpadding="0" border="1">
+    <tbody>
+	<tr>
+	    <td style="BORDER-RIGHT: #7f7f7f 1pt solid; PADDING-RIGHT: 5.4pt; BORDER-TOP: #7f7f7f 1pt solid; PADDING-LEFT: 5.4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: #7f7f7f 1pt solid; WIDTH: 135pt; PADDING-TOP: 0in; BORDER-BOTTOM: #7f7f7f 1pt solid; BACKGROUND-COLOR: transparent" width="180">
+	    <div style="MARGIN: 0in 0in 10pt">MainFrame.fx</div>
+	    </td>
+	    <td style="BORDER-RIGHT: #7f7f7f 1pt solid; PADDING-RIGHT: 5.4pt; BORDER-TOP: #7f7f7f 1pt solid; PADDING-LEFT: 5.4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: #ece9d8; WIDTH: 4.7in; PADDING-TOP: 0in; BORDER-BOTTOM: #7f7f7f 1pt solid; BACKGROUND-COLOR: transparent" width="451">
+	    <div style="MARGIN: 0in 0in 10pt">All the application specific JavaFX coding</div>
+	    </td>
+	</tr>
+	<tr>
+	    <td style="BORDER-RIGHT: #7f7f7f 1pt solid; PADDING-RIGHT: 5.4pt; BORDER-TOP: #ece9d8; PADDING-LEFT: 5.4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: #7f7f7f 1pt solid; WIDTH: 135pt; PADDING-TOP: 0in; BORDER-BOTTOM: #7f7f7f 1pt solid; BACKGROUND-COLOR: transparent" width="180">
+	    <div style="MARGIN: 0in 0in 10pt">ImageButton.fx</div>
+	    </td>
+	    <td style="BORDER-RIGHT: #7f7f7f 1pt solid; PADDING-RIGHT: 5.4pt; BORDER-TOP: #ece9d8; PADDING-LEFT: 5.4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: #ece9d8; WIDTH: 4.7in; PADDING-TOP: 0in; BORDER-BOTTOM: #7f7f7f 1pt solid; BACKGROUND-COLOR: transparent" width="451">
+	    <div style="MARGIN: 0in 0in 10pt">Image Hovering class from a javafx.com sample</div>
+	    </td>
+	</tr>
+	<tr>
+	    <td style="BORDER-RIGHT: #7f7f7f 1pt solid; PADDING-RIGHT: 5.4pt; BORDER-TOP: #ece9d8; PADDING-LEFT: 5.4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: #7f7f7f 1pt solid; WIDTH: 135pt; PADDING-TOP: 0in; BORDER-BOTTOM: #7f7f7f 1pt solid; BACKGROUND-COLOR: transparent" width="180">
+	    <div style="MARGIN: 0in 0in 10pt">TableHelper.java</div>
+	    </td>
+	    <td style="BORDER-RIGHT: #7f7f7f 1pt solid; PADDING-RIGHT: 5.4pt; BORDER-TOP: #ece9d8; PADDING-LEFT: 5.4pt; PADDING-BOTTOM: 0in; BORDER-LEFT: #ece9d8; WIDTH: 4.7in; PADDING-TOP: 0in; BORDER-BOTTOM: #7f7f7f 1pt solid; BACKGROUND-COLOR: transparent" width="451">
+	    <div style="MARGIN: 0in 0in 10pt">All the Swing JTable related coding is placed here</div>
+	    </td>
+	</tr>
+    </tbody>
+</table>
+<div style="MARGIN: 0in 0in 10pt">&nbsp;</div>
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Service Layer</span></strong></div>
+It is a copy of the classes available in Wicket CRUD example. Reference to Logger class is removed to reduce the overall size. </div>
+<div class="sectionHeading">Code Explanation</div>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Variable Declaration</span></strong></div>
+<div class="section">
+<p>The first two set of declarations are related to window size and position. The keyword &ldquo;<strong style="mso-bidi-font-weight: normal">def</strong>&rdquo; is used to represent constant values and is similar to &ldquo;final&rdquo; keyword is java. The keyword &ldquo;<strong style="mso-bidi-font-weight: normal">var</strong>&rdquo; represents generic dynamic variable.</p>
+<p>The distinction between these two types is clear from their usage: window size doesn&rsquo;t change in the example but its position can be changed.</p>
+<pre class="decorated"><code>
+<p>// Application Width and Height
+</p><p><span style="FONT-FAMILY: Courier">def stageWidth = 600;</span>
+</p><p><span style="FONT-FAMILY: Courier">def stageHeight = 450;</span>
+</p><p>// initial window location
+</p><p><span style="FONT-FAMILY: Courier">var stageX:Number = 320;</span>
+</p><p><span style="FONT-FAMILY: Courier">var stagey:Number = 160;</span>
+</p><p>// Is running as Applet in browser? If no, show close [X] button
+</p><p><span style="FONT-FAMILY: Courier">var inBrowser=&quot;true&quot;.equals(FX.getArgument(&quot;isApplet&quot;) as String);</span>
+</p><p><span style="FONT-FAMILY: Courier">var currentEmployee<strong style="mso-bidi-font-weight: normal">:Employee </strong>= null;</span></p>
+</code></pre>
+<p>See the usage of &ldquo;<strong style="mso-bidi-font-weight: normal">: Employee&rdquo;</strong>. This is how <em style="mso-bidi-font-style: normal">type of variable</em> is declared in JavaFX.</p>
+</div>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Transparent taskbar</span></strong></div>
+<div class="section">
+<p>The standard application taskbar is not displayed, yet it can be dragged around by holding the mouse at the top area of the window.<span>&nbsp; </span>It is made possible by a transparent <em style="mso-bidi-font-style: normal">Rectangle</em>.<code></code></p>
+<pre class="decorated"><p><span style="FONT-FAMILY: Courier">var titleBar = Rectangle {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>width:stageWidth</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>height:25<span>&nbsp; </span></span>// a horizontal strip with height 25 pixels
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>fill: Color.TRANSPARENT</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>visible: <strong style="mso-bidi-font-weight: normal">bind (not </strong>inBrowser<strong style="mso-bidi-font-weight: normal">)</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>onMouseDragged: function(e) {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>stageX += e.dragX;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>stageY += e.dragY; </span>// these two statements make the window move around
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span>
+</p></pre>
+<p>Display of this rectangle depends on the value of the variable <em style="mso-bidi-font-style: normal">inBrowser</em>, which is obtained from a parameter that indicates whether the application is running as applet or not. This is an example of data binding (through the keyword <strong style="mso-bidi-font-weight: normal">bind</strong>) feature available in JavaFX and is utilized in other parts of the example. Note that an expression can also be used with <strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">bind</em></strong> keyword.</p>
+<p>See <a href="http://java.sun.com/javafx/1/tutorials/core/dataBinding/">http://java.sun.com/javafx/1/tutorials/core/dataBinding/</a><span style="FONT-SIZE: 10pt; LINE-HEIGHT: 115%; FONT-FAMILY: 'Verdana','sans-serif'"> </span>for more details on JavaFX binding</p>
+</div>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Closing the Window</span></strong></div>
+<p><span style="FONT-SIZE: 10pt; LINE-HEIGHT: 115%; FONT-FAMILY: 'Verdana','sans-serif'">It is not necessary to program for closing the window. Since the application is in headless mode (i.e. without standard taskbar), closing of window had to be taken care of</span></p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var closeButton: ImageView = ImageButton {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span></span>// places it at the right top corner
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>x: stageWidth - 20</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>y: 5</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>normalImage: Image { url: &quot;<strong style="mso-bidi-font-weight: normal">{__DIR__}</strong>images/close_n.png&quot; }</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>selectImage: Image { url: &quot;<strong style="mso-bidi-font-weight: normal">{__DIR__}</strong>images/close_h.png&quot; }</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>visible: bind (not inBrowser)</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>onMouseClicked: function(e) {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">javafx.lang.FX.exit()</strong>;</span>//closes the application<span style="FONT-FAMILY: Courier"> </span>programmatically
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;</span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<p>The &ldquo;closeButton&rdquo; (it is an ImageView) is used to dispose the application window. Attributes <strong style="mso-bidi-font-weight: normal">x</strong> and <strong style="mso-bidi-font-weight: normal">y</strong> is used to place the button at the top right corner; this value is relative to the &ldquo;root&rdquo; node(Window/Stage) position.<span>&nbsp; </span>&ldquo;<strong style="mso-bidi-font-weight: normal"><span style="FONT-FAMILY: Courier">__DIR__</span></strong><span style="FONT-FAMILY: Courier">&quot;</span> points to the directory in which current <strong style="mso-bidi-font-weight: normal">.fx</strong> file is placed. The class <em style="mso-bidi-font-style: normal">ImageButton</em> is taken from a javafx sample: it provides hovering effect on the button. </p>
+<p><a href="http://javafx.com/samples/InterestingPhotos/src/ImageButton.fx.html">http://javafx.com/samples/InterestingPhotos/src/ImageButton.fx.html</a></p>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Background image handling</span></strong></div>
+<p>The below code snippets takes care of displaying and shuffling background images in this application. See how easy it is to create a new object (<span style="FONT-FAMILY: Courier">bgImage = ImageView</span>), no &ldquo;new&rdquo; keyword, and the variable type is optional. Note that a function call is made to initialize the <em style="mso-bidi-font-style: normal">image</em> variable</p>
+<p>The image files are named <em style="mso-bidi-font-style: normal">background0.JPG</em> through <em style="mso-bidi-font-style: normal">background4.JPG</em>. See the usage of <span>&nbsp;</span>curly braces with variables as in <strong style="mso-bidi-font-weight: normal"><span style="FONT-FAMILY: Courier">{</span></strong><span style="FONT-FAMILY: Courier">bgn<strong style="mso-bidi-font-weight: normal">} </strong></span>here; this is similar to using <strong style="mso-bidi-font-weight: normal">+</strong> operator with String in Java.</p>
+<p><span style="FONT-FAMILY: Courier">bgImage.image = getRandomImage(); </span>This statement changes the background image; no additional calls like repaint() or revalidate() to make the effect!!.</p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var bgImage = ImageView {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>x: 2</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>y: 2</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp; </span><span>&nbsp;&nbsp;</span><strong style="mso-bidi-font-weight: normal">image: getRandomImage()</strong></span>
+</p><p><span style="FONT-FAMILY: Courier">}</span>
+</p><p><strong style="mso-bidi-font-weight: normal"><span style="FONT-FAMILY: Courier">function getRandomImage() {</span></strong>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>var bgn = new Random().nextInt(5);</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>Image {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>url: &quot;{__DIR__}images/background<strong style="mso-bidi-font-weight: normal">{bgn}</strong>.JPG&quot;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span>
+</p><p><span style="FONT-FAMILY: Courier">var bgButton: ImageView = ImageButton {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>. . . . . </span>some code is not shown for brevity
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>onMouseClicked: function(e) {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span>// simply assigning a new image changes the background no explicit repaint/refresh!!
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>bgImage.image = getRandomImage();</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Creating a Button</span></strong></div>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var newEmpButton: SwingButton = SwingButton {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>text: &quot;Add Employee&quot;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">action</strong>: function() { // actionPerformed</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>buttonText = &quot;Create&quot;;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>onNewEmp ();</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Bringing JTable in JavaFX script</span></strong></div>
+<p>Creation of <em style="mso-bidi-font-style: normal">JTable</em>, <em style="mso-bidi-font-style: normal">TableModel</em> and the operations on them are encapsulated in <strong style="mso-bidi-font-weight: normal">TableHelper.java</strong>. Those who are familiar with Swing would understand the code. Explanation for the contents of this class is beyond the scope of this tutorial.</p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var table = TableHelper.create();</span>
+</p><p><span style="FONT-FAMILY: Courier">table.setPreferredSize(new Dimension(stageWidth,140));</span>
+</p><p>// this is how swing component is added as a content in JavaFX node/scene
+</p><p><span style="FONT-FAMILY: Courier">var tableComp = <strong>SwingComponent.wrap</strong>(table);</span></p>
+</code></pre>
+<p>More details: <a href="http://javafx.com/samples/ExercisingSwing/index.html">http://javafx.com/samples/ExercisingSwing/index.html</a></p>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Employee Details Page (Edit/Create)</span></strong></div>
+<p>The below code snippets shows how to create TextField and ComboBox in JavaFX . Notice how the ComboBox items are initialized on the fly from the list of <em style="mso-bidi-font-style: normal">departments.</em> See the usage of &ldquo;<strong style="mso-bidi-font-weight: normal">as</strong>&rdquo; to cast the variable to a particular type.</p>
+<p class="MsoNormalCxSpMiddle"><span style="FONT-FAMILY: Courier">var dept: Department = <strong style="mso-bidi-font-weight: normal">department <em style="mso-bidi-font-style: normal">as</em> Department</strong>; </span>in JavaFx</p>
+<p class="MsoNormalCxSpMiddle">equivalent to</p>
+<p class="MsoNormalCxSpMiddle"><span style="FONT-FAMILY: Courier">Department dept=(Department)department;</span> <span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>in Java</p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var firstNameField = SwingTextField {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>columns: 15</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>borderless: true</span>
+</p><p><span style="FONT-FAMILY: Courier">};</span>
+</p><p><span style="FONT-FAMILY: Courier">var departments = new DepartmentNoDBdao().getAllDepartments();</span>
+</p><p>// create and initialize the departments combobox
+</p><p><span style="FONT-FAMILY: Courier">var deptComboBox = SwingComboBox {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>selectedIndex: 2 </span>// default selected item index
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>width: 100</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>items: for (department in departments)</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>SwingComboBoxItem {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span>// &quot;as&quot; is used for casting in JavaFX
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>var dept: Department = <strong style="mso-bidi-font-weight: normal">department <em style="mso-bidi-font-style: normal">as</em> Department</strong>;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>text: dept.getName(); </span>// display text
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>value: dept; </span>// Object associated with the text
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Edit/Create Button</span></strong></div>
+<p>editCreateButton represents the save button in employee details page that gets labeled &ldquo;Edit&rdquo; when &ldquo;Edit Employee&rdquo; button is pressed and &ldquo;Create&rdquo; for &ldquo;Add Employee&rdquo; respectively in the front page. Notice the usage of <strong style="mso-bidi-font-weight: normal">bind</strong> keyword with <em style="mso-bidi-font-style: normal">buttonText </em>(button label changes when its value changes)</p>
+<p>Also note how the selected data is fetched from the ComboBox. </p>
+<p>&ldquo;currentEmployee&rdquo; is variable of type Employee that represents either the currently selected record in the table in the case of Edit or a new empty Employee object in the case of &ldquo;Add&rdquo;. See the functions onEditEmp () and onNewEmp ()</p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var editCreateButton = SwingButton {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>text: <strong style="mso-bidi-font-weight: normal">bind</strong> buttonText </span>// Text is based on the button clicked in the front page
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp; </span><span>&nbsp;&nbsp;</span>action: function() {<span>&nbsp;&nbsp;&nbsp; </span><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></span></p><p><span style="FONT-FAMILY: Courier">	currentEmployee.setFirstName(firstNameField.getJTextField().getText());</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>var depItem: SwingComboBoxItem = <strong style="mso-bidi-font-weight: normal">deptComboBox.getJComboBox().getSelectedItem() as SwingComboBoxItem</strong>;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>currentEmployee.setDepartment(<strong style="mso-bidi-font-weight: normal">depItem.value as Department</strong>);</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>if(&quot;Create&quot;.equals(buttonText)) </span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>new EmployeeNoDBdao().insertEmployee(currentEmployee);</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>onCancel ();</span>// done with edit/create, back to front page
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>TableHelper.refresh();</span></p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">};</span></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Employee Details Page: &ldquo;Form Fields&rdquo;</span></strong></div>
+<p>The below code snippet is used to layout fields and the associated labels in a standard alignment. Notice the usage of <strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">HBox</em></strong> and <strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">VBox</em></strong>; both are built-in layouts available in JavaFX to place components in a grid like layout.<span>&nbsp; </span>The first one is a simple layout manager that puts all nodes in an horizontal line, one after other. And the second do the same, but in a vertical line. Here different spacing size used to adjust for the height difference in Label and Field components.</p>
+<p>Unlike <strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">x </em></strong>and <strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">y </em></strong>which are in relative to &ldquo;root&rdquo; node,<span>&nbsp; </span><strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">translateX</em></strong> and <strong style="mso-bidi-font-weight: normal"><em style="mso-bidi-font-style: normal">translateY</em></strong> applies after transforming the current node with relation to the root and sibling nodes. <span>&nbsp;</span>Use this for minor adjustments. </p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">var newEmpFieldsBox = <strong style="mso-bidi-font-weight: normal">HBox</strong>{</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>spacing: 20</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">translateX: 10</strong></span>
+</p><p><strong style="mso-bidi-font-weight: normal"><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>translateY: 10</span></strong>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>content: [</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">VBox</strong>{</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">spacing: 20</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>content: [</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>SwingLabel {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>text: &quot;First Name: &quot;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>font: labelFont</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>},</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>SwingLabel {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>text: &quot;Last Name:&quot;</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>font: labelFont</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>},</span>
+</p><p><span style="FONT-FAMILY: Courier"><span style="mso-tab-count: 3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>.............</span></p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>editCreateButton</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>]</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">VBox</strong>{</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">spacing: 17.5</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>content: [firstNameField,lastNameField,ageField,deptComboBox,cancelButton]</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>}</span></p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>]</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Switching between pages</span></strong></div>
+<p>This is surprisingly easy in JavaFX; no remove/add on a parent container, no refresh and repaint method calls. Just switching the referred Node of a bound variable does the trick.</p>
+<p>The following code snippets show the places where page switching is done. As you can see <span style="FONT-FAMILY: Courier">pageHolder</span> which is bound to a location is the key to this feature.</p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">function onEditEmp () {
+</span><span style="FONT-FAMILY: Courier"><span style="mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>.............
+</span><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span></span>// show the employee details page...
+<span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong>pageHolder = empDetailsPage;</strong></span>
+</p><p><span style="FONT-FAMILY: Courier">}</span>
+</p><p><span style="FONT-FAMILY: Courier">function onNewEmp () {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>................
+</span><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>// show the employee details page...
+</span><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong>pageHolder = empDetailsPage;</strong></span>
+</p><p><span style="FONT-FAMILY: Courier">}</span>
+</p><p><span style="FONT-FAMILY: Courier">function onCancel () {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><span>&nbsp;&nbsp;</span></span>// done with Edit/Create show me the front page
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="FONT-FAMILY: Courier"><strong>pageHolder = frontPage;</strong></span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Layering/Grouping Components and Nodes</span></strong></div>
+The below part is the section that does &ldquo;putting things together&rdquo; aspect of the application.
+<p>The scenegraph used in JavaFX is a tree-like data structure where each item in the tree has zero or one parent, and each item is either a &quot;leaf&quot; with zero sub items or a &quot;branch&quot; with zero or more sub items.<span>&nbsp; </span>The positioning of each component in a JavaFX application will be depend on its <strong style="mso-bidi-font-weight: normal">x</strong> &amp; <strong style="mso-bidi-font-weight: normal">y</strong> coordinates, <strong style="mso-bidi-font-weight: normal">translateX</strong> &amp; <strong style="mso-bidi-font-weight: normal">translateY </strong>transformations, spacing of layouts etc.</p>
+<p>Let&rsquo;s explain the important statements from the bottom up:</p>
+<p><span style="FONT-FAMILY: Courier">var stageContent = [bgImage,closeButton,bgButton,contentBox];</span></p>
+<p>All the contents of this node get displayed based on their individual coordinates relative to its parent <em style="mso-bidi-font-style: normal">Stage</em>.<o:p>&nbsp;</o:p></p>
+<p><span style="FONT-FAMILY: Courier">pageWrapperBox </span>is used to <strong style="mso-bidi-font-weight: normal">bind</strong> <em style="mso-bidi-font-style: normal">pageHolder</em> with it. <em style="mso-bidi-font-style: normal">pageHolder</em> can not directly be bound as a element in the content<span>&nbsp; </span>array of <em style="mso-bidi-font-style: normal">contentBox</em></p>
+<p><span style="FONT-FAMILY: Courier">pageHolder</span> is a variable that points to currently displayed page. Assigning individual page Node to this variable will make it get displayed in the <em style="mso-bidi-font-style: normal">contentBox </em>thanks to the <strong style="mso-bidi-font-weight: normal">bind</strong> magic.</p>
+<pre class="decorated"><code>
+<span style="FONT-FAMILY: Courier">var buttonNode: Node[];</span>
+<p><span style="FONT-FAMILY: Courier">buttonNode = [newEmpButton, editEmpButton,delEmpButton];</span>
+</p><p><span style="FONT-FAMILY: Courier">var frontPage = VBox {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>spacing: 10</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>content: [buttonNode, tableComp]</span>
+</p><p><span style="FONT-FAMILY: Courier">};</span>
+</p><p><strong style="mso-bidi-font-weight: normal"><span style="FONT-FAMILY: Courier">var pageHolder = frontPage;</span></strong><span style="FONT-FAMILY: Courier"> </span>//initial page
+</p><p>// used this VBox to take advantage of &quot;bind&quot; key word with content
+</p><p><span style="FONT-FAMILY: Courier">var pageWrapperBox = VBox {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>spacing: 10</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>content: <strong style="mso-bidi-font-weight: normal">bind pageHolder</strong></span>
+</p><p><span style="FONT-FAMILY: Courier">};</span><span style="FONT-FAMILY: Courier"><o:p>&nbsp;</o:p></span>
+</p><p>// organizes the contents in a box and provide spacing between adjacent ccomponents
+</p><p><span style="FONT-FAMILY: Courier">var contentBox = VBox {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>spacing: 10</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">content: [titleBar,titleText,pageWrapperBox]</strong></span>
+</p><p><span style="FONT-FAMILY: Courier">};</span>
+</p><p>// place all the components in the Stage
+</p><p><strong style="mso-bidi-font-weight: normal"><span style="FONT-FAMILY: Courier">var stageContent = [bgImage,closeButton,bgButton,contentBox];</span></strong></p>
+</code></pre>
+<br />
+<div style="MARGIN: 0in 0in 10pt"><strong><span style="LINE-HEIGHT: 115%">Stage or &ldquo;root&rdquo; Node</span></strong></div>
+<p>The JavaFX <strong style="mso-bidi-font-weight: normal">Stage</strong> class is the top level container for the FX script instantiation. This is similar to the JFrame class in Swing. Note the usage of &ldquo;<strong style="mso-bidi-font-weight: normal">with inverse</strong>&rdquo; on the <strong style="mso-bidi-font-weight: normal">bind</strong> keyword: this is how binding is made bidirectional.<span>&nbsp; </span>Bidirectional bind allows updates to flow in either direction, rather than just from the bound expression to the variable.</p>
+<pre class="decorated"><code>
+<p><span style="FONT-FAMILY: Courier">Stage {</span></p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>width: stageWidth</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>height: stageHeight</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>visible: true</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">x: bind stageX with inverse</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">y: bind stageY with inverse</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span></span>// comment the &ldquo;style&rdquo; to display standard task bar
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span><strong style="mso-bidi-font-weight: normal">style: StageStyle.TRANSPARENT</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>scene: Scene {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>content: Group {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span>&nbsp;&nbsp;</span><strong style="mso-bidi-font-weight: normal">content: stageContent</strong></span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>clip: Rectangle {</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>width: stageWidth</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>height: stageHeight</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>arcWidth: 20</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>arcHeight: 20</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>fill: Color.WHITESMOKE</span>
+</p><p><span style="FONT-FAMILY: Courier"><span>&nbsp;&nbsp;&nbsp; </span>}</span>
+</p><p><span style="FONT-FAMILY: Courier">}</span></p>
+</code></pre>
+<div class="sectionHeading">Wrapping Up</div>
+<div class="section">
+<p>This is a simple raw JavaFX example to demonstrate the usage of JavaFX to develop CRUD applications. The integration of Swing components into JavaFX and the contextual explanation on some of the JavaFX language concepts are also included. I do not claim it to be a perfect example as I am also new to this language but hope that it gives you a head start on developing similar applications using JavaFX. Hopefully I shall come up with an improved and more organized version of the same example in the future.</p>
+<p>In case you wonder where the background images are from: <a href="http://images.google.com/images?hl=en&amp;q=Kerala&amp;gbv=2">http://images.google.com/images?hl=en&amp;q=<strong style="mso-bidi-font-weight: normal"><span style="COLOR: red">Kerala</span></strong>&amp;gbv=2</a></p>
+</div>
+<div class="sectionHeading">Comments and Feedbacks</div>
+<div class="section">
+<p>Please provide the comments and feedbacks at my blog</p>
+<p><a href="http://something-about-tech.blogspot.com/2009/02/javafx-crud-application.html">http://something-about-tech.blogspot.com/2009/02/javafx-crud-application.html</a></p>
+</div>
+

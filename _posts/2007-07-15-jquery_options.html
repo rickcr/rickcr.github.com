@@ -1,0 +1,133 @@
+---
+title: JQuery - Select Alters Other Select Options
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/2t6l0l4zQLu7X7GbHXl7Xy">jquery-options source code</a><br/>  
+<a href="http://ubuntuone.com/4K4RhvrjJaNY71n0HSNMHG">jquery-options war</a>
+</div>
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+This example shows two basic things. The main thing it's illustrating is the population of a 
+set of select options after you
+choose an option from a different select options list. The code that builds the select options with <a href="http://jquery.com/">JQuery</a>
+was
+taken directly from this site <a href="http://remysharp.com/2007/01/20/auto-populating-select-boxes-using-jquery-ajax/">http://remysharp.com/2007/01/20/auto-populating-select-boxes-using-jquery-ajax/</a> This example 
+also demonstrates returning the data as JSON from the controller layer (using <a href="http://flexjson.sourceforge.net/">Flexjson</a> in <a href="http://mc4j.org/confluence/display/stripes/Home">Stripes</a> but I show how 
+it would be donee in Struts as well.) The example source code uses Stripes and it's only meant to illustrate the
+'change options' behavior and  returning JSON from the server, nothing more, so don't look at it for best Stripes practices
+or anything. I'm only showing the relevant code below. Download the source 
+to get the full implementation. (I use System.out.println in the example so I don't have to get questions about setting up log4j.)
+<br/><br/>
+Screen shot:<br/>
+<img src="cars.jpg"/>
+<br/>
+</div>
+
+<div class="sectionHeading">Building and Running the Example</div>
+<div class="section">
+Requirements:
+<ul>
+<li>Java5+ </li>
+<li>Tomcat 5+ or a current version of Resin. The container just has to implement 
+at least Servlet 2.4 and JavaServer Pages 2.0 specifications.</li>
+<li>Ant, if you want to build from the source</li>
+</ul> 
+<br/>
+To build download the source and unzip then run "ant" in the unzipped directory. You can then move the query-options.war file from the dist directory to your
+appserver's webapps directory. Start your server and go to http://localhost:8080/jquery-options/
+</div>
+
+ 
+
+<div class="sectionHeading">CarActionBean.java</div>
+<div class="section">
+Stripe's CarActionBean is similar to an Action and ActionForm in Struts 1.x all rolled into one 
+(but much better of course:). When the option from the first select list is selected, it will 
+end up firing this "search" method in our ActionBean. We are then streaming JSON back to the
+client for our javascript to use. <br/>
+<pre class="decorated"><code>
+public Resolution search() {
+    List&lt;Car> cars = carsService.getCars(manufacturerId);
+    <span class="standout">String jsonResult = new flexjson.JSONSerializer().serialize(cars);</span>
+    return new StreamingResolution("application/javascript", jsonResult);
+}
+</code></pre>
+<br/>
+If we were doing this in a Struts Action method we'd do something like:<br/>
+
+<pre class="decorated"><code>
+public ActionForward search(...) {
+    int manufacturerId = Integer.parseInt(request.getParameter("manufacturerId"));
+    List&lt;Car> cars = carsService.getCars(manufacturerId);
+    String jsonResult = new flexjson.JSONSerializer().serialize(cars);    
+    response.setContentType("text/javascript");
+    response.getWriter().write(jsonResult);
+    return null;
+}
+</code></pre> 
+</div>
+
+<div class="sectionHeading">cars.jsp</div>
+<div class="section">
+The JSP showing the JQuery Javascript. It should be pretty self explanatory (assunming you are familiar 
+a bit with JQuery.) The options collection below is populated by the Stripes ActionBean call to "getManufacturers."
+If you were using Struts you'd probably first set that collection of Manufacturer objects in
+Request scope before going to this JSP. The "id" and "name" you see in the jquery javascript below comes from
+the JSON String that is returned from the server, 
+and represents the member variables "id" and "name" of the Car value object.
+If the Car ojbect had the variables "displayName" and "carID" you'd be using those values instead.
+<pre class="decorated"><code>
+&lt;%@ page contentType="text/html;charset=UTF-8" language="java" %>
+&lt;%@ include file="/taglibs.jsp" %>
+&lt;html>
+&lt;head>
+    &lt;link href="&lt;c:url value='main.css'/>" rel="stylesheet" type="text/css"/>
+    &lt;style>td {white-space:nowrap; }&lt;/style>
+    &lt;title>Cars&lt;/title>
+    
+    &lt;script type="text/javascript" src="jquery.js">&lt;/script>
+    &lt;script type="text/javascript">
+        <span class="standout">$(document).ready(function() {
+            $(function() {
+                $("select#manufacturers").change(function() {
+                    $.getJSON("Car.action?search=",{manufacturerId: $(this).val(), ajax: 'true'}, function(j){
+                    var options = '';
+                        for (var i = 0; i &lt; j.length; i++) {
+                            options += '&lt;option value="' + j[i].id + '">' + j[i].name + '&lt;/option>';
+                        }
+                        $("select#cars").html(options);
+                    })
+                })
+            })
+        });</span>
+    &lt;/script>
+
+&lt;/head>
+&lt;body>
+&lt;div class="titleDiv">Cars&lt;/div>
+
+&lt;stripes:form action="/Car.action">
+&lt;stripes:errors/>
+    &lt;table>
+        &lt;tr>
+            &lt;td class="tdLabel">&lt;stripes:label for="label.make.select"/>:&lt;/td>
+            &lt;td><span class="standout">
+                &lt;stripes:select name="manufacturerId" id="manufacturers">
+                    &lt;stripes:options-collection collection="${actionBean.manufacturers}" label="name" value="id"/>
+                &lt;/stripes:select></span>
+            &lt;/td>
+            &lt;td>&nbsp;&nbsp;&nbsp;&lt;/td>
+            &lt;td class="tdLabel">&lt;stripes:label for="label.model.select"/>:
+                <span class="standout">&lt;select name="carId" id="cars">&lt;/select></span>
+            &lt;/td>
+        &lt;/tr>
+    &lt;/table>
+&lt;/stripes:form>
+&lt;/body>
+&lt;/html>
+</code></pre>
+</div>
+
+<div class="author">Code and Lesson - Rick Reumann</div>
+ 

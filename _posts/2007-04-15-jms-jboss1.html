@@ -1,0 +1,346 @@
+---
+title:  JMS on JBoss using MDB
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/0rMkeWVptpwuBxfuiu9FyY">rr-jms-allinone 2.1 source code</a><br/>
+<a href="http://ubuntuone.com/6qIVGTobv0vT8FtBcVzcQL">rr-jms-allinone ear</a>
+</div>
+ 
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+This simple JMS application has you submit a form which sends a message to a JBoss queue. A Message-Driven Bean (MDB) will be listening on that queue destination and receives the mssage and processes it.
+</div>
+
+<div class="sectionHeading">The Setup</div>
+<div class="section">
+<b>Download the source</b> 
+Download the source above and unzip it into your project directory of
+choice. For eclipse users the source comes with an eclipse project so you can
+just import that project file and be good to go. To build using ant,
+type 'ant all' or if you want to build and deploy to jboss type 'ant deploy' to build and deploy the ear to JBoss.
+<br/><br/>
+<b>Java5</b> The Java5 JDK needs to be set as your environment. JAVA_HOME env variable needs to be defined pointing to yth the JDK home directory.<br/>
+<br/>
+<b>JBoss 4.x</b> - Download JBoss 4.x here <a href="http://labs.jboss.com/portal/jbossas/download">http://labs.jboss.com/portal/jbossas/download</a>. 
+Since you'll be probably be coding with the EJB 3.0 spec soon enough, set up JBoss4.x using the installer as described on the download page.
+After JBoss is installed declare a JBOSS_HOME environment variable pointing to the JBoss root directory.<br/>
+<br/>
+<b>Running the example</b> If you've built the project usingg ant (ant deploy), the ear will be deployed to jboss and you simply go to your jboss home dir/bin and start jboss with run.sh (Nix flavors) or run.bat (Windows). If you want to just see the app run you can download the ear above and put the ear into your
+jboss/default/deploy directory. 
+Once jboss is started, go the following url:
+http://localhost:8080/rr-jms
+<br/><br/>
+<div class="sectionHeading">A Note About XDoclet</div>
+<div class="section">
+XDoclet reduces the amount of annoying code you have to write when
+dealing with EJB 2.1. I didn't use XDoclet here since
+I wanted to show all the steps you'd have go through to work with EJBs
+when not using XDoclet. EJB3 is also greatly simplified with the use
+of annotations. (MDBs are a type of EJB.) 
+</div>
+
+<div class="sectionHeading">web.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="ISO-8859-1"?>
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	version="2.4">
+	&lt;display-name>rr-email-jms example&lt;/display-name>
+
+	&lt;servlet>
+		&lt;servlet-name>AppServlet&lt;/servlet-name>
+		&lt;servlet-class>net.learntechnology.jms.AppServlet&lt;/servlet-class>
+	&lt;/servlet>
+
+	&lt;servlet-mapping>
+		&lt;servlet-name>AppServlet&lt;/servlet-name>
+		&lt;url-pattern>/StartLongProcess&lt;/url-pattern>
+	&lt;/servlet-mapping>
+
+	&lt;resource-ref>
+		&lt;res-ref-name>jms/LongProcessQueue&lt;/res-ref-name>
+		&lt;res-type>javax.jms.Queue&lt;/res-type>
+		&lt;res-auth>Container&lt;/res-auth>
+	&lt;/resource-ref>
+	
+	&lt;resource-ref>
+		&lt;res-ref-name>jms/AppQueueConnectionFactory&lt;/res-ref-name>
+		&lt;res-type>javax.jms.QueueConnectionFactory&lt;/res-type>
+		&lt;res-auth>Container&lt;/res-auth>
+	&lt;/resource-ref>
+
+&lt;/web-app> 
+</code></pre>
+</div>
+
+<div class="sectionHeading">jboss-web.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.4//EN"
+ "http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd">
+
+&lt;jboss-web>
+	&lt;resource-ref>
+		&lt;res-ref-name>jms/LongProcessQueue&lt;/res-ref-name>
+		&lt;jndi-name>queue/LongProcessQueue&lt;/jndi-name>
+	&lt;/resource-ref>
+	&lt;resource-ref>
+		&lt;res-ref-name>jms/AppQueueConnectionFactory&lt;/res-ref-name>
+		&lt;jndi-name>java:/JmsXA&lt;/jndi-name>
+	&lt;/resource-ref>
+&lt;/jboss-web>
+</code></pre>
+</div>
+<br/>
+
+<div class="sectionHeading">index.jsp form</div>
+<div class="section">
+<pre class="decorated">
+&lt;form name="appForm" action="StartLongProcess">
+    Your name: lt;input type="text" name="name" size="40"><br/>
+    &lt;br/><br/>
+    &lt;input type="submit" value="Kick-off The Long Process"/>
+&lt;/form>
+</code></pre>
+</div>
+
+<div class="sectionHeading">AppServlet</div>
+<div class="section">
+<pre class="decorated"><code>
+public class AppServlet extends HttpServlet {
+    private static final String QUEUE_CONNECTION_FACTORY = "java:comp/env/jms/AppQueueConnectionFactory";
+    private static final String LONG_PROCESS_QUEUE = "java:comp/env/jms/LongProcessQueue";
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response) 
+        throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response) 
+        throws ServletException, IOException {
+    	System.out.println("in doPost of AppServlet..");
+    	String name = request.getParameter("name");
+    	System.out.println("name: "+name );
+    	ProcessDTO processDTO = new ProcessDTO();
+    	processDTO.setName(name);
+		JmsProducer.sendMessage(processDTO, QUEUE_CONNECTION_FACTORY, LONG_PROCESS_QUEUE);
+		request.setAttribute("started",true);
+		RequestDispatcher dispatcher =  getServletContext().getRequestDispatcher("/index.jsp");
+        dispatcher.forward(request, response);
+    }
+}</code></pre>
+</div>
+
+<div class="sectionHeading">JmsProducer</div>
+<div class="section">
+<pre class="decorated"><code>
+public class JmsProducer {
+    private JmsProducer() {}
+    public static void sendMessage(Serializable payload, String connectionFactoryJndiName, 
+        String destinationJndiName) throws JmsProducerException {
+        try {
+            ConnectionFactory connectionFactory = null;
+            Connection connection = null;
+            Session session = null;
+            Destination destination = null;
+            MessageProducer messageProducer = null;
+            ObjectMessage message = null;
+            System.out.println("In sendMessage of JmsProducter, 
+                getting ConnectionFactory for jndi name: "+connectionFactoryJndiName );
+            connectionFactory = ServiceLocator.getJmsConnectionFactory(
+                                                     connectionFactoryJndiName);
+
+            connection = connectionFactory.createConnection();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            destination = ServiceLocator.getJmsDestination(destinationJndiName);
+            messageProducer = session.createProducer(destination);
+            message = session.createObjectMessage(payload);
+            messageProducer.send(message);
+            System.out.println("Message sent to messageProducer");
+            messageProducer.close();
+            session.close();
+            connection.close();
+        } catch (JMSException je) {
+            throw new JmsProducerException(je);
+        } catch (ServiceLocatorException sle) {
+            throw new JmsProducerException(sle);
+        }
+    }
+}
+</code></pre>
+</div>
+<div class="sectionHeading">ServiceLocator</div>
+<div class="section">
+<pre class="decorated"><code>
+public class ServiceLocator {
+   private ServiceLocator() {}
+     public static ConnectionFactory getJmsConnectionFactory(String jmsConnectionFactoryJndiName)
+             throws ServiceLocatorException {
+        ConnectionFactory jmsConnectionFactory = null;
+        try {
+            Context ctx = new InitialContext();
+            jmsConnectionFactory = (ConnectionFactory) ctx.lookup(jmsConnectionFactoryJndiName);
+        } catch (ClassCastException cce) {
+            throw new ServiceLocatorException(cce);
+        } catch (NamingException ne) {
+            throw new ServiceLocatorException(ne);
+        }
+        return jmsConnectionFactory;
+    }
+    public static Destination getJmsDestination(String jmsDestinationJndiName) 
+            throws ServiceLocatorException {
+        Destination jmsDestination = null;
+        try {
+            Context ctx = new InitialContext();
+            jmsDestination = (Destination) ctx.lookup(jmsDestinationJndiName);
+        } catch (ClassCastException cce) {
+            throw new ServiceLocatorException(cce);
+        } catch (NamingException ne) {
+            throw new ServiceLocatorException(ne);
+        }
+        return jmsDestination;
+    }
+}
+</code></pre>
+</div>
+
+<div class="sectionHeading">rr-email-jms-destinations-service.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;server>
+    &lt;mbean code="org.jboss.mq.server.jmx.Queue"
+           name="jboss.mq.destination:service=Queue,name=LongProcessQueue">
+      &lt;depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager&lt;/depends>
+    &lt;/mbean>
+&lt;/server>
+</code></pre></div>
+
+<div class="sectionHeading">application.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;application xmlns="http://java.sun.com/xml/ns/j2ee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                                 http://java.sun.com/xml/ns/j2ee/application_1_4.xsd"
+             version="1.4">
+    &lt;display-name>rr-jms-allinone EAR&lt;/display-name>
+    &lt;module>
+        &lt;web>
+            &lt;web-uri>rr-jms-webapp.war&lt;/web-uri>
+            &lt;context-root>rr-jms&lt;/context-root>
+        &lt;/web>
+    &lt;/module>
+    &lt;module>
+        &lt;java>common.jar&lt;/java>
+    &lt;/module>
+    &lt;module>
+        &lt;ejb>rr-jms-ejb.jar&lt;/ejb>
+    &lt;/module>
+&lt;/application>
+</code></pre></div>
+
+<div class="sectionHeading">LongProcessMessageBean</div>
+<div class="section">
+<pre class="decorated"><code>
+public class LongProcessMessageBean implements MessageDrivenBean, MessageListener {
+
+    //...
+
+    public void onMessage(Message message) {
+    	String name = null; 
+        try {
+            if (message instanceof ObjectMessage) {
+                ObjectMessage objMessage = (ObjectMessage) message;
+                Object obj = objMessage.getObject();
+                if (obj instanceof ProcessDTO) {
+                	name = ((ProcessDTO)obj).getName();
+			    	System.out.println("****************************************************");
+			        System.out.println("LongProcessMessageBean.onMessage(): Received message. NAME: "+name);
+			    	System.out.println("****************************************************");
+			    	System.out.println("Now calling LongProcessService.doLongProcess");
+                    ProcessResult result = LongProcessService.doLongProcess((ProcessDTO)obj);
+                 } else {
+                    System.err.println("Expecting ProcessDTO in Message");
+                }
+            } else {
+                System.err.println("Expecting Object Message");
+            }
+            System.out.println("*******************************************");
+            System.out.println("Leaving LongProcessMessageBean.onMessage(). NAME: "+name );
+            System.out.println("*******************************************");
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+}
+</code></pre></div>
+
+
+<div class="sectionHeading">ejb-jar.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+
+&lt;ejb-jar xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"
+	version="2.1">
+
+	&lt;description>ejb-jar.xml for rr-jms-allinone&lt;/description>
+	&lt;display-name>ejb-jar.xml&lt;/display-name>
+
+	&lt;enterprise-beans>
+      &lt;message-driven >
+         &lt;description>Long Process Message MDB&lt;/description>
+         &lt;display-name>LongProcessMessageMDB&lt;/display-name>
+         &lt;ejb-name>LongProcessMessageBean&lt;/ejb-name>
+         &lt;ejb-class>net.learntechnology.ejb.LongProcessMessageBean&lt;/ejb-class>
+         &lt;messaging-type>javax.jms.MessageListener&lt;/messaging-type>
+         &lt;transaction-type>Container&lt;/transaction-type>
+         &lt;message-destination-type>javax.jms.Queue&lt;/message-destination-type>
+         &lt;activation-config>
+           &lt;activation-config-property>
+             &lt;activation-config-property-name>destinationType&lt;/activation-config-property-name>
+             &lt;activation-config-property-value>javax.jms.Queue&lt;/activation-config-property-value>
+           &lt;/activation-config-property>
+           &lt;activation-config-property>
+             &lt;activation-config-property-name>acknowledgeMode&lt;/activation-config-property-name>
+             &lt;activation-config-property-value>Auto-acknowledge&lt;/activation-config-property-value>
+           &lt;/activation-config-property>
+           &lt;activation-config-property>
+             &lt;activation-config-property-name>subscriptionDurability&lt;/activation-config-property-name>
+             &lt;activation-config-property-value>NonDurable&lt;/activation-config-property-value>
+           &lt;/activation-config-property>
+         &lt;/activation-config>
+      &lt;/message-driven>
+	&lt;/enterprise-beans>
+
+	&lt;assembly-descriptor>
+	&lt;/assembly-descriptor>
+
+&lt;/ejb-jar>
+</code></pre></div>
+
+<div class="sectionHeading">jboss.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!DOCTYPE jboss PUBLIC "-//JBoss//DTD JBOSS 4.0//EN" "http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd">
+&lt;jboss>
+	&lt;enterprise-beans>
+      &lt;message-driven>
+         &lt;ejb-name>LongProcessMessageBean&lt;/ejb-name>                       
+         &lt;destination-jndi-name>queue/LongProcessQueue&lt;/destination-jndi-name>
+      &lt;/message-driven>
+	&lt;/enterprise-beans>
+	&lt;assembly-descriptor>&lt;/assembly-descriptor>
+	&lt;resource-managers>&lt;/resource-managers>
+&lt;/jboss>
+</code></pre></div>
+
+<div class="author">Code and Lesson - Rick Reumann</div>

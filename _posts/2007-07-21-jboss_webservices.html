@@ -1,0 +1,172 @@
+---
+title: Web Services on JBoss using JAX-WS (and Axis2)
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/55Q9BU9XfqC7eNIcI10Ib5">rr-webservice.zip source code</a>
+</div> 
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+I've always found working with web services an exercise and extreme frustration. Fortunately, at the time of this writing (July '07), dealing with web services has become easier. Finding examples putting everything together is sometimes difficult, so I wrote this tutorial to hopefully shed some light on using some of the later web service techniques with JBoss.
+<br/><br/>
+This tutorial demonstrates:
+<ul>
+<li>Exposing an EJB3 as a web service on JBoss</li> 
+<li>Consuming JAX-WS web service with a manual approach</li>
+<li>Consuming JAX-WS web service using the generated stubs</li>
+<li>Creating Axis2 client stubs and consuming the web service using these stubs</li>
+</ul>
+</div>
+
+<div class="sectionHeading">The Setup</div>
+<div class="section">
+You'll need the following items download and the appropriate enviornment variables set up as described below:
+<ul>
+<li>Java 5 or greater</li>
+<li><a href="http://labs.jboss.com/jbossas/downloads">JBoss 4.2</a></li>
+<li><a href="http://labs.jboss.com/jbossws/downloads">JBoss WS Patch</a></li>
+<li>Ant (if you don't have Ant this lesson might be too advanced:)</li>
+<li><a href="http://ws.apache.org/axis2/download.cgi">Axis2</a> (optional but you need this if you want to compile and run the Axis2 client )</li>
+<li>This <a href="${appcontext}/examples/rr-webservice.zip">project source code</a></li>
+</ul>
+<br/>
+After downloading the above, you'll need to set up some environment variables, for the ant build script to run properly.
+<ul>
+<li>JAVA_HOME - you probably already have this one</li>
+<li>JBOSS_HOME</li>
+<li>JBOSS_WS_PATCH_DIR - directory where you extracted the JBoss WS Patch</li>
+<li>AXIS2_HOME - if you care to run the Axis2 client</li>
+</ul>
+<br/>
+If you are using eclipse, you should be able to just import this project into Eclipse. You will need the following variables set up in Eclipse for it to compile in Eclipse: JBOSS_4.2, JBOSS_WS_PATCH_DIR, AXIS2_HOME
+</div>
+
+<div class="sectionHeading">Building and Running</div>
+<div class="section">
+Assuming you have everything set up from the previous section, go to the directory where you downloaded the project and run <b><code>ant all</code></b>.  Future builds should just require you doing <b><code>ant deploy</code></b>. The initial <code>ant all</code> task will call <code>setup_jboss</code> which will make a copy of the default server in jboss and create a new one called 'webservices.' It then patches this server with JbossWS. This makes sure that your initial setup of JBoss isn't affected by this build. Once <code>ant all</code> is run, you can go to your JBOSS_HOME/bin directory and start the server with <b><code>run.sh -c webservices</code></b>. Now go to the following URL <a href="http://localhost:8080/rr-webservice">http://localhost:8080/rr-webservice</a> in your browser and enter in a String. Then look at the console where you started JBoss or the webservice.log file and you'll see your echo'd String two times. If you have Axis2 installed, you could also test the Axis2 client with <b><code>ant axis2run</code></b>. You should see ECHO FROM AXIS! in your console and log file.
+</div>
+<br/><br/>
+
+<div class="sectionHeading">Our EJB Layer</div>
+<div class="section">
+Below we expose our Echo EJB as a WebService with the @WebService annotation. It's a good idea on JBoass at the time of this article to declare
+a @WebContext as well (a JBoss specific annotation), otherwise you could end up conflicts with other websrvices.. I believe this is posted as a 
+bug, so it might be fixed by the time you are reading this. Notice with EJB3, there aren't any descriptors you have to manually code (or need for XDoclet.) In just a few lines we have both a Stateless session bean and a Webservice end point deployed when the server starts up.
+<pre class="decorated"><code>
+//EchoBean.java
+@Stateless
+@WebService(endpointInterface="net.learntechnology.sample.ejb.slsb.Echo")
+@WebContext(contextRoot="/sampleWebServices")
+public class EchoBean implements EchoLocal, EchoRemote, Echo {
+    private static Log log = LogFactory.getLog(EchoBean.class);
+    public String doEcho( String text) {
+         log.debug("doEcho in webservice ejb");
+         return text;
+    }
+}
+
+//Echo.java 
+@WebService
+@SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.WRAPPED)
+public interface Echo {
+    @WebMethod
+    public String doEcho(@WebParam(name="textToEcho")  String text);
+}
+
+//EchoLocal.java
+@Local
+public interface EchoLocal extends Echo {}
+
+//EchoRemote.java
+@Remote
+public interface EchoRemote extends Echo {}
+</code></pre>
+</div>
+
+<div class="sectionHeading">Access The Web Service</div>
+<div class="section">
+Below is our client code that calls our Web Service. In a real life application this code would probably be run on another server (since if running on the same server you could just make an EJB call). This client below is called from out WebServiceTestServlet.
+
+<pre class="decorated"><code>
+public class EchoClient {
+    private static Log log = LogFactory.getLog(EchoClient.class);
+
+    public String echo(String text) {
+        log.debug("echo client, attempting to echo String "+ text);
+        System.out.println("sop");
+        String result = null;
+        try {
+
+            //*** OPTION A *****
+            //JAX-WS directly
+            log.info("Using jax-ws directly...");
+            Service service = Service.create(
+                    new URL("http://localhost:8080/sampleWebServices/EchoBean?wsdl"),
+                    new QName("http://slsb.ejb.sample.learntechnology.net/","EchoBeanService") );
+            Echo echo = service.getPort(Echo.class );
+            echo.doEcho(text);
+            result = echo.doEcho(text);
+            log.info("jax-ws called directly, echo: "+ result);
+
+            //*** OPTIONS B ****
+            //JAX-WS Use generated stubs from wsconsume
+            log.info("using jbossws generated stubs...");
+            EchoBeanService service2 = new EchoBeanService();
+            net.learntechnology.sample.client.jaxws.generated.Echo echo2 = service2.getEchoBeanPort();
+            log.info("jax-ws echo webservice, echo: "+echo2.doEcho(text));
+
+
+            //*** OPTION C ****
+            //Using Axis2 generated client stubs
+            //to see this, have server running and use ant..
+            //ant axis2run
+
+
+        } catch (Exception e) {
+             e.printStackTrace();
+             log.error("Error in EchoClient client: ",e);
+        }
+        return result;
+    }
+}
+</code></pre>
+If you were a remote client using Option A, you'd get the information that you see needed from the wsdl directly (Obviously the URL wouldn't be 'localhost'.) You'd also need to be given the Echo interface to use. It's unlikely that Option A would be used much in my opinion, unless you all the SOA integration was internal where you could easily share the interface. Option B is a more likely senario. In Option B you use the JBossWS <a href="http://jbws.dyndns.org/mediawiki/index.php/Wsconsume">wsconume</a> tool to generate your client stubs based off the wsdl. In this application I included the generated stubs in the client.jaxws.generated package. Typically, you never have to mess with them. They should work 'as is.' Option C will be the Axis2 example that I'll describe next. For some reason, I had issues trying to use both JBossWS and Axis2 running on the same server. I had some class conflict issues that I was too lazy to figure out.)
+</div>
+
+<div class="sectionHeading">Axis2</div>
+<div class="section">
+Axis2 is nice to use when you aren't using JBoss (maybe you're just using Tomcat or maybe a stand-alone client application.) Axis2 will generate stubs for you that you can use. Personally, I found working with these stubs extremely awkward. If someone has some better advice on how to generate some easier to use stubs, PLEASE e-mail me.  To generate the Axis2 stubs you run the  <a href="http://ws.apache.org/axis2/1_2/userguide-creatingclients.html#generating">WSDL2Java</a> script in the Axis2 bin directory. (At the time of this writing there is a bug in the Linux script. The fix is easy though: http://marc.info/?l=axis-user&m=117870155000086&w=2 ) The generated Axis2 client stub is in the axis2 directory in the net.learntechnology.axis2.generated package. The client that is called from Ant looks like (notice the awkwardness of the stub usage compared to how easy using JAX-WS in the last section):
+
+<pre class="decorated">
+<code>
+public class Axis2Client {
+    public static void main(String[] args) {
+        testAxis2echo("ECHO FROM AXIS!");
+    }
+
+    public static String testAxis2echo(String echoString ) {
+        String result = null;
+        try {
+            EchoBeanServiceStub stub = new EchoBeanServiceStub();
+            EchoBeanServiceStub.DoEcho doEcho = new EchoBeanServiceStub.DoEcho();
+            doEcho.setTextToEcho(echoString);
+            EchoBeanServiceStub.DoEcho1 doEcho1 = new EchoBeanServiceStub.DoEcho1();
+            doEcho1.setDoEcho(doEcho);
+            EchoBeanServiceStub.DoEchoResponse0 echoResponse0 = stub.doEcho(doEcho1);
+            EchoBeanServiceStub.DoEchoResponse response = echoResponse0.getDoEchoResponse();
+            System.out.println("axis2 echo response = "+response.get_return() );
+        } catch (AxisFault e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+}</code></pre>
+</div>
+
+<div class="sectionHeading">Conclusion</div>
+<div class="section">
+That's about it. Not too bad was it?</div>
+
+<div class="author">Code and Lesson - Rick Reumann</div> 

@@ -1,0 +1,322 @@
+---
+title: Grails Part 1
+layout: article
+---
+<a href="http://ubuntuone.com/6ekVEBhO4w8Vc7sPWUHgA3">grails-employee source code</a><br/> 
+<br/> 
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+This is part 1 in what will hopefully be a series of examples using <a href="http://grails.org/">Grails</a>. Like most of the other lessons on this site, the purpose of
+these examples are to demonstrate the steps in building working applications. Although I'll often make some brief comments,
+the lessons aren't meant to provide detailed explanations of the parts that make up Grails. 
+For thorough coverage pick up a book and check out the <a href="http://grails.org/doc/1.0.x/">online documentation</a>. The only book I've read so far is 
+<a href="http://www.amazon.com/Definitive-Guide-Grails/dp/1590597583/ref=pd_bbs_1?ie=UTF8&s=books&qid=1198445325&sr=8-1">The 
+Definitive Guide to Grails</a> by Graeme Rocher (I found it quite excellent.) 
+<br/><br/>
+For those familiar with the other tutorials on this site, I'm keeping with the "Employee Maintenance" theme that the others follow.  
+</div>
+  
+
+<div class="sectionHeading">Before you get started</div>
+<div class="section">
+If this is your very first grails application, you'll need to download grails and set up your GRAILS_HOME environment variable. These initial steps are 
+described well <a href="http://grails.org/Installation">here</a>. (After following the steps described in the previous link, open up
+a terminal and type <code>grails</code> to make sure you have everything
+set up correctly. You should see "Welcome to Grails" as part of the first line.)<br/><br/>
+You could also follow along looking at the source code provided but I suggest not downloading the source 
+ and actually 
+follow the steps below instead so that you get a better feel for the ease of development with Grails.
+</div>
+
+<div class="sectionHeading">Creating our project skeleton</div>
+<div class="section">
+Using a terminal (command line), navigate to the directory where you work on your projects. Once in this directory type: 
+<code>grails create-app grails-employee</code>. You'll notice a lot of directories and
+files set up for you in a new directory called "grails-employee." Already this is sort of nice, since there is no need to worry about
+how to set up your project or worrying about creating your own Ant build file. Grails also comes with a built-in HSQL
+database and comes using Jetty as an application server. Of course, we could configure our application to use another database and it's one command
+to create a war file that we can deploy to a different application server. For this demo, however, we'll just use the default setup. 
+</div>
+
+<div class="sectionHeading">Create our domain objects</div>
+<div class="section">
+We'll assume we don't have an existing database already set up and populated. Grails uses Hibernate by default and as we build domain objects
+and save and edit them we'll actually be persisting them to the underlying database without touching any SQL. For this simple application we're going
+to work with two domain objects, an "Employee" and a "Department." We'll start by building a Department domain object. 
+<br/><br/>
+If you open up your 'grails-employee'
+project you just created in the last step, you'll find a directory: 'grails-app/domain.' 
+We can simply start by either creating a domain class here by using our IDE 
+or editor and naming it "Department.groovy" or we could go to the terminal and within our grails-employee directory type:
+<code>grails create-domain-class Department</code>. After entering this command, a "Department.groovy" class will
+be created automatically
+in the grails-employee/grails-app/domain directory. Navigate to this class, or edit the one that you created with your editor, and have the 
+class look like:
+
+<pre><span class="syntax0"><span class="syntax10">class</span> Department { 
+    String name;
+    
+    String <span class="syntax6">toString</span><span class="syntax18">(</span><span class="syntax18">)</span> { 
+        <span class="syntax8">return</span> name;
+    }
+}
+</span></pre>
+Next, let's create our Employee domain object (Employee.groovy) in the same grails-app/domain directory (using the same
+procedure as you did for the Department domain object.) This domain object will contain a reference to a
+Department object. Create your Employee.groovy class as such:
+
+<pre><span class="syntax0"><span class="syntax10">class</span> Employee { 
+    Department department;
+    String firstName;
+    String lastName;
+    <span class="syntax10">int</span> age;
+    
+    <span class="syntax8">static</span> constraints <span class="syntax18">=</span> {
+        <span class="syntax6">firstName</span><span class="syntax18">(</span>blank:<span class="syntax14">false</span>, nullable:<span class="syntax14">false</span>, <span class="syntax11">size</span>:<span class="syntax5">1</span>..<span class="syntax5">150</span><span class="syntax18">)</span> 
+        <span class="syntax6">lastName</span><span class="syntax18">(</span>blank:<span class="syntax14">false</span>, nullable:<span class="syntax14">false</span>, <span class="syntax11">size</span>:<span class="syntax5">1</span>..<span class="syntax5">150</span><span class="syntax18">)</span>  
+        <span class="syntax6">age</span><span class="syntax18">(</span>min:<span class="syntax5">18</span>,max:<span class="syntax5">120</span><span class="syntax18">)</span>
+    }
+   
+    String <span class="syntax6">toString</span><span class="syntax18">(</span><span class="syntax18">)</span> {
+        <span class="syntax8">return</span> <span class="syntax13">&quot;</span><span class="syntax9">&#36;</span><span class="syntax9">firstName</span><span class="syntax13"> </span><span class="syntax9">&#36;</span><span class="syntax9">lastName</span><span class="syntax13"> </span><span class="syntax13">(</span><span class="syntax13">id</span><span class="syntax13">:</span><span class="syntax13"> </span><span class="syntax9">&#36;</span><span class="syntax9">id</span><span class="syntax13">)</span><span class="syntax13">&quot;</span>
+    }
+}
+</span></pre>
+ 
+</div>
+
+<div class="sectionHeading">Populate our database</div>
+<div class="section">
+Since we're running in dev mode, we'll just use the grails-app/conf/BootStrap.groovy class to populate our database. 
+(If you take a look at the grails-app/conf/DataSource.groovy
+file, you'll notice that in development mode the dbcreate mode is set as <code>dbCreate = "create-drop"</code> 
+which means that the tables will be dropped and recreated
+on startup.) In the BootStrap <code>init</code> method we'll just create some instances of the domain objects we just created 
+and call "save()" on them which will
+persist them to the database. The following initialization code will create three Departments then create fifty Employees populated with some random
+information. <br/>
+Open up the BootStrap.groovy class and modify to look like:
+
+<pre><span class="syntax0"><span class="syntax10">class</span> BootStrap {
+
+     <span class="syntax9">def</span> init <span class="syntax18">=</span> { servletContext <span class="syntax18">-&gt;</span>
+        
+         Department a <span class="syntax18">=</span> <span class="syntax8">new</span> <span class="syntax6">Department</span><span class="syntax18">(</span> name: <span class="syntax13">&quot;</span><span class="syntax13">HR</span><span class="syntax13">&quot;</span><span class="syntax18">)</span>.<span class="syntax6">save</span><span class="syntax18">(</span><span class="syntax18">)</span>;
+         Department b <span class="syntax18">=</span> <span class="syntax8">new</span> <span class="syntax6">Department</span><span class="syntax18">(</span> name: <span class="syntax13">&quot;</span><span class="syntax13">Accounting</span><span class="syntax13">&quot;</span><span class="syntax18">)</span>.<span class="syntax6">save</span><span class="syntax18">(</span><span class="syntax18">)</span>;
+         Department c <span class="syntax18">=</span> <span class="syntax8">new</span> <span class="syntax6">Department</span><span class="syntax18">(</span> name: <span class="syntax13">&quot;</span><span class="syntax13">Sales</span><span class="syntax13">&quot;</span><span class="syntax18">)</span>.<span class="syntax6">save</span><span class="syntax18">(</span><span class="syntax18">)</span>;
+         <span class="syntax9">def</span> departments <span class="syntax18">=</span> [a, b, c]
+         <span class="syntax9">def</span> firstNames <span class="syntax18">=</span> [<span class="syntax13">&quot;</span><span class="syntax13">Greg</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Fred</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Doug</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Craig</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Dustin</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Steve</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Kristy</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Rick</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Wilma</span><span class="syntax13">&quot;</span>]
+         <span class="syntax9">def</span> lastNames <span class="syntax18">=</span> [<span class="syntax13">&quot;</span><span class="syntax13">Smith</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Flinstone</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Abbot</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Williams</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Adams</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Goober</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Brady</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Jones</span><span class="syntax13">&quot;</span>,<span class="syntax13">&quot;</span><span class="syntax13">Heffernen</span><span class="syntax13">&quot;</span>]
+         Random random <span class="syntax18">=</span> <span class="syntax8">new</span> <span class="syntax6">Random</span><span class="syntax18">(</span><span class="syntax18">)</span>
+         <span class="syntax5">1</span>.<span class="syntax11">upto</span><span class="syntax18">(</span><span class="syntax5">50</span><span class="syntax18">)</span> { i <span class="syntax18">-&gt;</span>  
+            <span class="syntax9">def</span> first <span class="syntax18">=</span> firstNames[ random.<span class="syntax6">nextInt</span><span class="syntax18">(</span><span class="syntax5">9</span><span class="syntax18">)</span>]
+            <span class="syntax9">def</span> last <span class="syntax18">=</span> lastNames[ random.<span class="syntax6">nextInt</span><span class="syntax18">(</span><span class="syntax5">9</span><span class="syntax18">)</span>] <span class="syntax18">+</span> i
+            <span class="syntax9">def</span> dep <span class="syntax18">=</span> departments[ random.<span class="syntax6">nextInt</span><span class="syntax18">(</span><span class="syntax5">3</span><span class="syntax18">)</span>]
+            <span class="syntax9">def</span> age <span class="syntax18">=</span> random.<span class="syntax6">nextInt</span><span class="syntax18">(</span><span class="syntax5">40</span><span class="syntax18">)</span><span class="syntax18">+</span><span class="syntax5">18</span>
+            <span class="syntax8">new</span> <span class="syntax6">Employee</span><span class="syntax18">(</span> firstName: first, lastName: last, age: age, department: dep<span class="syntax18">)</span>.<span class="syntax6">save</span><span class="syntax18">(</span><span class="syntax18">)</span>;
+         }
+         <span class="syntax9">assert</span><span class="syntax18">(</span> Employee.<span class="syntax6">list</span><span class="syntax18">(</span><span class="syntax18">)</span>.<span class="syntax11">size</span><span class="syntax18">(</span><span class="syntax18">)</span> <span class="syntax18">=</span><span class="syntax18">=</span> <span class="syntax5">50</span> <span class="syntax18">)</span> 
+     }
+     <span class="syntax9">def</span> destroy <span class="syntax18">=</span> {
+     }
+} 
+</span></pre>
+</div>
+ 
+<div class="sectionHeading">Create Employee controller</div>
+<div class="section">
+From the terminal (still in our grails-employee directory) type: <code>grails create-controller Employee.</code> 
+Grails will create the controller called "EmployeeController.groovy" and it will 
+be placed in the grails-app/controllers directory. Open up that file and you'll see it looks like:
+<pre><span class="syntax0"><span class="syntax10">class</span> EmployeeController {
+    <span class="syntax9">def</span> index <span class="syntax18">=</span> { }
+}
+</span></pre>
+'index' will be the default action executed in this controller which, of course in this case, doesn't do anything.  We'll be modifying this controller
+shortly.
+</div>
+
+<div class="sectionHeading">Dynamic Scaffolding</div>
+<div class="section">
+If you want a quick and usable application to now handle all your CRUD operations for an Employee we can do it simply now by using just one line of code! 
+They key is in dynamic scaffolding. I'll quote Graeme Rocher's explanation on scaffolding:<br/>
+<div style="padding:5px;"><i>Scaffolding is the name coined by the Rails framework for the generation of the artifacts that make up a usable interface to perform CRUD 
+operations. This term has been fruther extended and generalized to basically mean the generation of an interface to fufill a use case based on the convention 
+within a project</i> (Graeme Rocher 'The Definitive Guide to Grails' p.89)</div>
+Let's demonstrate an example of dynamic scaffolding by modifying the "EmployeeController.groovy" file you just created in the previous step. 
+Open up that file and change it to look like:
+<pre><span class="syntax0"><span class="syntax10">class</span> EmployeeController {
+    <span class="syntax9">def</span> scaffold <span class="syntax18">=</span> Employee
+}
+</span></pre>
+Now lets run the application. From the terminal (still in the grails-test directory we created) type:<br/>
+<code>grails run-app</code><br/>
+Open up your browser, and you should be able to navigate to <a href="http://localhost:8080/grails-employee">http://localhost:8080/grails-employee</a>.
+<br/><br/>
+The screen should look like:<br/><br/>
+<img src="/img/scaffold1.jpg"/><br/>
+You could then click on the "EmployeeController" link and view the employees...<br/><br/>
+<img src="/img/scaffold2.jpg"/><br/><br/>
+You can sort the columns by clicking on the column headers and you can show the employee detail and edit the employee after clicking on 
+the employeeId in the left-hand column.
+<br/><br/>
+Quite impressive - From one line of code in our EmployeeController we end up with a fully functional CRUD application! (You might notice that if you go to
+edit an employee and try to edit the department, you'll get a 'page not found' error. This is because we didn't create a controller with a scaffold 
+definition for the Department
+domain object. You certainly can create that controller if you wish (just like we did for an Employee), which would then allow you to modify the Deaprtments as well.)
+<br/><br/>
+This scaffolding is pretty cool, but often times you'll want to modify the views (the GSP pages) and you'll often need to provide some
+added functionality to the controllers. We'll get to this in the next two sections. 
+</div>
+</div>
+
+<div class="sectionHeading">Customizing our controller</div>
+<div class="section">
+In our EmployeeController we have one line: <code>def scaffold = Employee</code>. By convention our views that are created dynmaically will
+call action methods called "list, show, delete, edit, save, update, create." We can provide our own implementation for any of these we 
+want in the controller we just created, for example:<br/>
+<pre><span class="syntax0"><span class="syntax10">class</span> EmployeeController {
+    <span class="syntax9">def</span> scaffold <span class="syntax18">=</span> Employee
+    
+    <span class="syntax9">def</span> save <span class="syntax18">=</span> { 
+        <span class="syntax1">//</span><span class="syntax1">handle</span><span class="syntax1"> </span><span class="syntax1">save</span><span class="syntax1"> </span><span class="syntax1">how</span><span class="syntax1"> </span><span class="syntax1">we</span><span class="syntax1"> </span><span class="syntax1">want</span>
+    }
+}
+</span></pre>
+Grails comes with another feature which will generate all the default CRUD methods for you in the controller. Surprisingly this grails task is:
+<code>grails generate-controller</code>. Type <code>grails generate-controller Employee</code> from the terminal.  
+Since we already created an Employee controller, it will ask if you have want to overwrite it - type "y" and enter. 
+<br/><br/>
+Open up the generated EmployeeController class ( in grails-app/controllers )
+and you will now see all the CRUD methods, redirects, flash messages, etc. We can now tweak this class anyway we see fit. Maybe we want to change the 
+message displayed after a successful update. Let's go ahead and modify some of the flash messages.
+<br/><br/>
+If you look at our Employe domain object, it contained a toString() method that looked like:<br/>
+<pre><span class="syntax0">String <span class="syntax6">toString</span><span class="syntax18">(</span><span class="syntax18">)</span> {
+    <span class="syntax8">return</span> <span class="syntax13">&quot;</span><span class="syntax9">&#36;</span><span class="syntax9">firstName</span><span class="syntax13"> </span><span class="syntax9">&#36;</span><span class="syntax9">lastName</span><span class="syntax13"> </span><span class="syntax13">(</span><span class="syntax13">id</span><span class="syntax13">:</span><span class="syntax13"> </span><span class="syntax9">&#36;</span><span class="syntax9">id</span><span class="syntax13">)</span><span class="syntax13">&quot;</span>
+}
+</span></pre>
+Let's use the toString of this Employee object instead of simply displaying the employee id parameter 
+that the default update and save methods use in the default Employee controller we just created. 
+<br/><br/>
+You'll see the default update and save methods have the following flash messages:<br/>
+
+<code>flash.message = "Employee &#36;{params.id} updated"</code> and<br/>
+<code>flash.message = "Employee &#36;{employee.id} created"</code><br/><br/>
+
+Let's change them to use the Employee toString in the flash messages. Here is the updated "save" and "update" methods:<br/>
+
+<pre><span class="syntax0"><span class="syntax9">def</span> save <span class="syntax18">=</span> {
+    <span class="syntax9">def</span> employee <span class="syntax18">=</span> <span class="syntax8">new</span> <span class="syntax6">Employee</span><span class="syntax18">(</span>params<span class="syntax18">)</span>
+    <span class="syntax8">if</span><span class="syntax18">(</span><span class="syntax18">!</span>employee.<span class="syntax6">hasErrors</span><span class="syntax18">(</span><span class="syntax18">)</span> <span class="syntax18">&amp;</span><span class="syntax18">&amp;</span> employee.<span class="syntax6">save</span><span class="syntax18">(</span><span class="syntax18">)</span><span class="syntax18">)</span> {
+        <span style="font-weight:bold;color:red">flash.message = "Employee &#36;{employee} created"</span>
+        <span class="syntax6">redirect</span><span class="syntax18">(</span>action:show,id:employee.id<span class="syntax18">)</span>
+    }
+    <span class="syntax8">else</span> {
+        <span class="syntax6">render</span><span class="syntax18">(</span>view:<span class="syntax13">'</span><span class="syntax13">create</span><span class="syntax13">'</span>,model:[employee:employee]<span class="syntax18">)</span>
+    }
+}
+</span></pre>
+
+<pre><span class="syntax0"><span class="syntax9">def</span> update <span class="syntax18">=</span> {
+    <span class="syntax9">def</span> employee <span class="syntax18">=</span> Employee.<span class="syntax6">get</span><span class="syntax18">(</span> params.id <span class="syntax18">)</span>
+    <span class="syntax8">if</span><span class="syntax18">(</span>employee<span class="syntax18">)</span> {
+        employee.properties <span class="syntax18">=</span> params
+        <span class="syntax8">if</span><span class="syntax18">(</span><span class="syntax18">!</span>employee.<span class="syntax6">hasErrors</span><span class="syntax18">(</span><span class="syntax18">)</span> <span class="syntax18">&amp;</span><span class="syntax18">&amp;</span> employee.<span class="syntax6">save</span><span class="syntax18">(</span><span class="syntax18">)</span><span class="syntax18">)</span> {
+            <span style="font-weight:bold;color:red">flash.message = "Employee &#36;{employee} updated"</span>     
+            <span class="syntax6">redirect</span><span class="syntax18">(</span>action:show,id:employee.id<span class="syntax18">)</span>
+        }
+        //...
+}
+</span></pre> 
+</div>
+
+<div class="sectionHeading">Modifying the views</div>
+<div class="section">
+The dynamically generated views that our scaffolding created are ok, but what if you want to modify them? You could of course create your gsp pages from 
+scratch, which is fine, but there is an easier way by having grails generate the crud gsp pages for you. 
+<br/><br/>
+To create our Employee gsp files, you can simply type: <code>grails generate-views Employee</code>. 
+You'll then see four gsp files (create, edit, list, and show) in your grails-app/views/employee directory.
+<br/><br/>
+Looking at the create.gsp and edit.gsp file that were created, you will notice that they files are almost identical. Since we're smart developers
+we realize we should reuse where we can, so 
+let's extract the employee form section out into a Grails' equivalent of a JSP include file - called a "template."  
+<br/><br/>
+Templates are created with an underscore in front of their name and
+they are rendered using the <code>g:render</code> tag. We're going to make an <code>_editor.gsp</code> template and place it in the same directory where
+our other employee view files are located ( /grails-app/views/employee). (This '_editor' name is the same name Graeme Rocher used in 
+his bookmark application, described in more detail in <i>The Definitive Guide to Grails</i>. It makes sense to call it 'editor' since it contains    
+the form that lets you edit the details of the domain object.) Our _editor.jsp should look like:<br/>
+
+<pre><span class="syntax0"><span class="syntax17">&lt;</span><span class="syntax17">table</span><span class="syntax17">&gt;</span>
+<span class="syntax17">&lt;</span><span class="syntax17">tbody</span><span class="syntax17">&gt;</span> 
+    <span class="syntax17">&lt;</span><span class="syntax17">tr</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">prop</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">name</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">label</span><span class="syntax17"> </span><span class="syntax17">for</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">firstName</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>First Name:<span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">label</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">value</span><span class="syntax13"> </span><span class="syntax9">&#36;{</span><span class="syntax6">hasErrors</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">firstName</span><span class="syntax13">'</span>,<span class="syntax13">'</span><span class="syntax13">errors</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">input</span><span class="syntax17"> </span><span class="syntax17">type</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">text</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">id</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">firstName</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">name</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">firstName</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">value</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax9">&#36;{</span><span class="syntax6">fieldValue</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">firstName</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">/</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">tr</span><span class="syntax17">&gt;</span>  
+    <span class="syntax17">&lt;</span><span class="syntax17">tr</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">prop</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">name</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">label</span><span class="syntax17"> </span><span class="syntax17">for</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">lastName</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>Last Name:<span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">label</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">value</span><span class="syntax13"> </span><span class="syntax9">&#36;{</span><span class="syntax6">hasErrors</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">lastName</span><span class="syntax13">'</span>,<span class="syntax13">'</span><span class="syntax13">errors</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">input</span><span class="syntax17"> </span><span class="syntax17">type</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">text</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">id</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">lastName</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">name</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">lastName</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">value</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax9">&#36;{</span><span class="syntax6">fieldValue</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">lastName</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">&quot;</span><span class="syntax17">/</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">tr</span><span class="syntax17">&gt;</span> 
+    <span class="syntax17">&lt;</span><span class="syntax17">tr</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">prop</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">name</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">value</span><span class="syntax13"> </span><span class="syntax9">&#36;{</span><span class="syntax6">hasErrors</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">age</span><span class="syntax13">'</span>,<span class="syntax13">'</span><span class="syntax13">errors</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">input</span><span class="syntax17"> </span><span class="syntax17">type</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">text</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">id</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">age</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">name</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">age</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">value</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax9">&#36;{</span><span class="syntax6">fieldValue</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">age</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">/</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">tr</span><span class="syntax17">&gt;</span>  
+    <span class="syntax17">&lt;</span><span class="syntax17">tr</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">prop</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">name</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">label</span><span class="syntax17"> </span><span class="syntax17">for</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">department</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>Department:<span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">label</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">td</span><span class="syntax17"> </span><span class="syntax17">valign</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">top</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">value</span><span class="syntax13"> </span><span class="syntax9">&#36;{</span><span class="syntax6">hasErrors</span><span class="syntax18">(</span><span class="syntax12">bean</span><span class="syntax18">:</span>employee,<span class="syntax12">field</span><span class="syntax18">:</span><span class="syntax13">'</span><span class="syntax13">department</span><span class="syntax13">'</span>,<span class="syntax13">'</span><span class="syntax13">errors</span><span class="syntax13">'</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">'</span><span class="syntax17">&gt;</span>
+            <span class="syntax17">&lt;</span><span class="syntax17">g</span><span class="syntax18">:</span><span class="syntax6">select</span><span class="syntax17"> </span><span class="syntax17">optionKey</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">id</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">from</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax9">&#36;{</span>Department.<span class="syntax6">list</span><span class="syntax18">(</span><span class="syntax18">)</span><span class="syntax9">}</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">name</span><span class="syntax17">=</span><span class="syntax13">'</span><span class="syntax13">department</span><span class="syntax13">.</span><span class="syntax13">id</span><span class="syntax13">'</span><span class="syntax17"> </span><span class="syntax17">value</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax9">&#36;{</span>employee?.department?.id<span class="syntax9">}</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">&gt;</span><span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">g</span><span class="syntax18">:</span><span class="syntax6">select</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">td</span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">tr</span><span class="syntax17">&gt;</span>  
+<span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">tbody</span><span class="syntax17">&gt;</span>
+<span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">table</span><span class="syntax17">&gt;</span>
+</span></pre>
+
+Now we can simplify the create.gsp and edit.gsp files. In the create.jsp, around line 23, you'll see:<br/>
+<pre><span class="syntax0"><span class="syntax17">&lt;</span><span class="syntax17">g</span><span class="syntax18">:</span><span class="syntax6">form</span><span class="syntax17"> </span><span class="syntax17">action</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">save</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">method</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">post</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">div</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">dialog</span><span class="syntax13">&quot;</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">table</span><span class="syntax17">&gt;</span>
+</span></pre>
+Simply remove the whole form section you see there, starting with the "table" after the section div class="dialog" section,
+and have it use our template:<br/>
+<pre><span class="syntax0"><span class="syntax17">&lt;</span><span class="syntax17">g</span><span class="syntax18">:</span><span class="syntax6">form</span><span class="syntax17"> </span><span class="syntax17">action</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">save</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">method</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">post</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">div</span><span class="syntax17"> </span><span class="syntax17">class</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">dialog</span><span class="syntax13">&quot;</span><span class="syntax17">&gt;</span>
+        <span class="syntax17">&lt;</span><span class="syntax17">g</span><span class="syntax18">:</span><span class="syntax6">render</span><span class="syntax17"> </span><span class="syntax17">template</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">editor</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">model</span><span class="syntax17">=</span><span class="syntax13">&quot;</span><span class="syntax13">[</span><span class="syntax13">employee</span><span class="syntax13">:</span><span class="syntax13">employee</span><span class="syntax13">]</span><span class="syntax13">&quot;</span><span class="syntax17"> </span><span class="syntax17">/</span><span class="syntax17">&gt;</span>
+    <span class="syntax17">&lt;</span><span class="syntax17">/</span><span class="syntax17">div</span><span class="syntax17">&gt;</span>
+</span></pre>
+Do the same thing in the edit.gsp file. Now both the create.gsp and edit.gsp will use the editor template for rendering the form content.<br/><br/>
+You also might
+want to make a template for displaying an employee that you can use in other pages besides just the show.gsp page. 
+(You could of course
+even combine the create.gsp and edit.gsp into one file and use a bit of logic to determine what title to display. You could even share the same 
+controller "save" action for creating and updating with a bit of logic also, such as looking for an empty employee.id to signal an insert.) 
+<br/><br/>
+
+Lastly, lets just change the index.gsp file in the grails-employee/web-app directory so that it does a simple redirect to our controller list method:<br/>
+<pre><span class="syntax0"><span class="syntax8">&lt;%</span> response.<span class="syntax6">sendRedirect</span><span class="syntax18">(</span><span class="syntax13">&quot;</span><span class="syntax13">employee/list</span><span class="syntax13">&quot;</span><span class="syntax18">)</span>; <span class="syntax8">%&gt;</span></span></pre>
+Refresh your browser at http://localhost:8080/grails-employee/ and you should see the changes. (No need to have to re-run '<code>grails run-app</code>', 
+grails will
+pick up our changes automatically.)
+</div>
+</div>
+
+<div class="sectionHeading">Conclusion</div>
+<div class="section">
+Obviously I've only touched the surface with Grails, but this simple lesson should show you how quickly you can be up and running with a decent, functional
+web-based CRUD application.
+</div>
+
+<div class="author">Code and Lesson - Rick Reumann</div>

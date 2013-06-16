@@ -1,0 +1,657 @@
+---
+title: Struts1 iBATIS Spring
+layout: article
+---
+<div class="source">
+<a href="http://ubuntuone.com/3TWliuwmW4QogqKs0gM9g7">spring_ibatis source code</a><br/>
+<a href="http://ubuntuone.com/0IIajAHiODCH3GfqoaM4Dq">spring_ibatis.war</a>
+</div> 
+ 
+<div class="sectionHeading">Introduction</div>
+<div class="section">
+This lesson represents a simple complete Struts application that uses iBATIS for it's persistence layer and uses some Spring to make our life easier. Even if not using iBATIS or Spring, the application could serve as a nice template for building typical CRUD (create, return, update, delete) applications. This lesson assumes that you already familiar with Struts. Also, rather than walk you through building every boring component (ie simple POJOs), it assumes you have downloaded the source for this project and I'll just be commenting on certain aspects of the application. Special things to take note of will also be highlighted in red. This document isn't meant to take the place of the Struts, iBATIS, and Spring documentation - it's more of a primer on how to integrate all of them. A special thinks to Larry Meadors for his technical guidance and suggestions in the development of this lesson.
+</div>
+ 
+<div class="sectionHeading">Jars</div>
+<div class="section">
+This application uses the following jars:
+
+<ul>
+	<li>commons-beanutils.jar</li>
+	<li>commons-digester.jar</li>
+	<li>commons-logging.jar</li>
+	<li>ibatis-common-2.jar</li>
+	<li>commons-collections-3.1.jar</li>
+    <li>commons-dbcp-1.2.1.jar</li>
+    <li>commons-pool-1.2.jar</li>
+	<li>ibatis-sqlmap-2.jar</li>
+	<li>jstl-1.1.1.jar</li>
+	<li>standard-1.1.1.jar</li>
+	<li>spring.jar</li>
+	<li>log4j-1.2.9.jar</li>
+	<li>struts.jar</li>
+</ul>
+You can just use the jars that come with the source code for this application, but if you want the latest versions:
+<p/>
+<br/>
+The latest commons jar files <b>commons-beanutils, commons-digester, commons-logging</b> can be found here <a href="http://jakarta.apache.org/commons/">http://jakarta.apache.org/commons/</a>, but it's easier to just download the latest Struts Action Framework <a href="http://struts.apache.org/acquiring.html">http://struts.apache.org/acquiring.html</a> and just use the commons jars that are in the example apps provided with Struts. Obviously you should get the latest <b>struts</b> jar from there as well.
+<br/><br/>
+JSTL jars (<b>standard, jstl</b>) <a href="http://cvs.apache.org/builds/jakarta-taglibs/nightly/">http://cvs.apache.org/builds/jakarta-taglibs/nightly/</a>
+<br/><br/>
+<b>log4j</b> <a href="http://logging.apache.org/log4j/docs/download.html">http://logging.apache.org/log4j/docs/download.html</a>
+<br/><br/>
+<b>spring</b> <a href="http://www.springframework.org/download">http://www.springframework.org/download</a>
+<br/><br/>
+<b>ibatis-common and ibatis-sqlmap</b> <a href="http://ibatis.apache.org/downloads.html">http://ibatis.apache.org/downloads.html</a>
+</div>
+
+
+<div class="sectionHeading">Database Setup</div>
+<div class="section">
+If you already have a local database that you are used to using, your best bet is to just use that database and you can skip this hsql setup section. Be sure that the two tables in the mydb.script (in source zip) are created and populated with the data as shown in the script.
+<br/><br/>
+For setting up and running hsql:
+<ol>
+	<li>Download hsql zip file from <a href="http://hsqldb.org/">http://hsqldb.org/</a></li>
+	<li>Unzip into directory of choice (On windows I just used C:)</li>
+	<li>Copy hsqldb.jar from /hsqldb/lib and place copy in {yourTomcatDir}/common/lib dir</li>
+	<li>Make a directory in /hsqldb called "dbdir"</li>
+	<li>Put the mydb.script file and the mydb.properties file (from source zip) in the /hsqldb/dbdir directory. (If someone is good with Hsql, could these please e-mail and tell me why the properties file is needed also. It seems to just make one that is identical if I leave it out, yet the tables are built without this particular file from my system.)</li>
+	<li>From the command line move to the dbdir dir /hsqldb/dbdir and run the following: 
+		  <br/><br/>
+		  java -cp ../lib/hsqldb.jar org.hsqldb.Server -database.0 mydb -dbname.0 xdb
+		<br/><br/></li>
+	</ol>
+	The last step above starts the db server running locally on your machine. When working with this applicaiton you will need to have that running in order for the application to connect to the database. Just run that command in the last step every time you need to start up hsql.
+    <br/><br/>
+    <span style="color:red;">UPDATE:</span> David Schmitt made the above easier by providing a simple ant script 
+    that can be used to drop and add the tables. You can now skip step 5 above and from the root of the struts-spring-ibatis project just run:
+    <br/><br/>
+    ant createDB
+    <br/><br/>
+    You can also run "ant dropDB" if you want to drop the two tables.
+</div>
+
+<div class="sectionHeading">web.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="ISO-8859-1"?>
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+    http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+
+    &lt;display-name>Rick Reumann Struts-Spring-iBATIS Demo&lt;/display-name>
+    &lt;description/>
+
+    &lt;servlet>
+        &lt;servlet-name>action&lt;/servlet-name>
+        &lt;servlet-class>org.apache.struts.action.ActionServlet&lt;/servlet-class>
+        &lt;init-param>
+            &lt;param-name>config&lt;/param-name>
+            &lt;param-value>/WEB-INF/struts-config.xml&lt;/param-value>
+        &lt;/init-param>
+        &lt;init-param>
+            &lt;param-name>debug&lt;/param-name>
+            &lt;param-value>2&lt;/param-value>
+        &lt;/init-param>
+        &lt;init-param>
+            &lt;param-name>detail&lt;/param-name>
+            &lt;param-value>2&lt;/param-value>
+        &lt;/init-param>
+        &lt;load-on-startup>2&lt;/load-on-startup>
+    &lt;/servlet>
+
+    &lt;servlet-mapping>
+        &lt;servlet-name>action&lt;/servlet-name>
+        &lt;url-pattern>*.do&lt;/url-pattern>
+    &lt;/servlet-mapping>
+
+    &lt;welcome-file-list>
+        &lt;welcome-file>index.jsp&lt;/welcome-file>
+    &lt;/welcome-file-list>
+
+    <span class="standout">
+    &lt;error-page>
+        &lt;exception-type>java.lang.Exception&lt;/exception-type>
+        &lt;location>/error.jsp&lt;/location>
+    &lt;/error-page>
+
+    &lt;context-param>
+        &lt;param-name>javax.servlet.jsp.jstl.fmt.localizationContext&lt;/param-name>
+        &lt;param-value>MessageResources&lt;/param-value>
+    &lt;/context-param>
+</span>
+&lt;/web-app>
+</code></pre>
+I like to define a global error.jsp in my web.xml that all my errors from the application will trickle up to. You could also define this in the struts-config but I prefer defining it in web.xml.
+<br/><br/>
+Notice the definition of the MessageResources file in the web.xml. Instead of using the old bean:write tag to display messages from our resources file, we're using the JSTL format tag. In order to use this tag the message bundle needs to be defined in the web.xml (*We still need to define this Resources file in the struts-config file so that errors and messages can be set up). If you look at the actual MessageResources file in the src directory you'll see it is actually called "MessageResources_en.properties."  This is nice since you can provide different Locale resource files for different languages _it (Italian), _de (German), _fr (French), etc.
+</div>
+
+
+<div class="sectionHeading">spring.properties</div>
+<div class="section">
+This is the file that our spring.xml file (described shortly) is going to use to grab a few properties in relation to our datasource. You could, of course, skip using this file and hardcode these properties directly in the spring.xml file, but it's always nice to separate properties that might often change. For example, we might want to quickly change to using a different database and it's much easier to simply edit this one properties file than hunt though the spring.xml file and alter that.
+<br/><br/>
+If you are using hsql as described earlier in this document, you don't need to touch this file. However, if you are using a different database (or a different hsql configuration) than you will need to modify these properties accordingly:
+<pre><code>
+driverClassName=org.hsqldb.jdbcDriver
+url=jdbc:hsqldb:hsql://localhost/xdb
+username=sa
+password=
+</pre></code>
+</div>
+
+<div class="sectionHeading">struts-config.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="ISO-8859-1" ?>
+
+&lt;!DOCTYPE struts-config PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+        "http://jakarta.apache.org/struts/dtds/struts-config_1_2.dtd">
+
+&lt;struts-config>
+
+    &lt;form-beans>
+        &lt;form-bean name="employeeForm" type="net.reumann.demo.form.EmployeeForm"/>
+    &lt;/form-beans>
+
+    &lt;action-mappings>
+
+        &lt;action
+                path="/employeeSetUp"
+                name="employeeForm"
+                <span class="standout">type="org.springframework.web.struts.DelegatingActionProxy"</span>
+                scope="request"
+                parameter="dispatch">
+            &lt;forward name="success" path="/employeeForm.jsp"/>
+        &lt;/action>
+
+        &lt;action
+                path="/employeeProcess"
+                name="employeeForm"
+                <span class="standout">type="org.springframework.web.struts.DelegatingActionProxy"</span>
+                scope="request"
+                parameter="dispatch">
+            &lt;forward name="failure" path="/employeeForm.jsp"/>
+            &lt;forward name="success" path="/employees.jsp"/>
+        &lt;/action>
+
+    &lt;/action-mappings>
+
+    &lt;message-resources parameter="MessageResources" null="false"/>
+
+    <span class="standout">&lt;plug-in className="org.springframework.web.struts.ContextLoaderPlugIn">
+        &lt;set-property
+                property="contextConfigLocation"
+            value="/WEB-INF/classes/spring.xml"/>
+    &lt;/plug-in></span>
+
+&lt;/struts-config>
+</code></pre>
+This application uses just one DispatchAction (EmployeeAction.java), but since we are using Spring, we set the type in our ActionMappings to org.springframework.web.struts.DelegatingActionProxy. Our spring.xml file (mentioned next) will map the paths in our action mappings to the actual Action classes (in this case EmployeeAction). This will become more clear shortly. The other thing to notice is the plugin definition and the location of the spring.xml file as a property for the plugin.
+</div>
+
+<div class="sectionHeading">spring.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
+        "http://www.springframework.org/dtd/spring-beans.dtd">
+
+&lt;beans>
+
+    <span class="standout">&lt;!-- Section 1 --></span>
+    &lt;bean id="propertyConfigurer"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        &lt;property name="location" value="classpath:spring.properties"/>
+    &lt;/bean>
+
+    <span class="standout">&lt;!-- Section 2 --></span>
+    &lt;bean name="/employeeSetUp" class="net.reumann.demo.action.EmployeeAction">
+        &lt;constructor-arg index="0" ref="employeeService"/>
+        &lt;constructor-arg index="1" ref="departmentService"/>
+    &lt;/bean>
+
+    &lt;bean name="/employeeProcess" class="net.reumann.demo.action.EmployeeAction">
+        &lt;constructor-arg index="0" ref="employeeService"/>
+        &lt;constructor-arg index="1" ref="departmentService"/>
+    &lt;/bean>
+
+    <span class="standout">&lt;!-- Section 3 --></span>
+    &lt;bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        &lt;property name="driverClassName" value="${driverClassName}"/>
+        &lt;property name="url" value="${url}"/>
+        &lt;property name="username" value="${username}"/>
+        &lt;property name="password" value=""/>
+    &lt;/bean>
+
+    <span class="standout">&lt;!-- Section 4 --></span>
+    &lt;bean id="sqlMapClient"
+          class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        &lt;property name="configLocation">
+            &lt;value>classpath:net/demo/persistence/SqlMapConfig.xml&lt;/value>
+        &lt;/property>
+        &lt;property name="useTransactionAwareDataSource">
+            &lt;value>true&lt;/value>
+        &lt;/property>
+        &lt;property name="dataSource">
+            &lt;ref bean="dataSource"/>
+        &lt;/property>
+    &lt;/bean>
+
+    <span class="standout">&lt;!-- Section 5 --></span>
+    &lt;bean id="sqlMapClientTemplate"
+          class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        &lt;property name="sqlMapClient">
+            &lt;ref bean="sqlMapClient"/>
+        &lt;/property>
+    &lt;/bean>
+
+    <span class="standout">&lt;!-- Section 6 --></span>
+    &lt;bean id="employeeDao" class="net.reumann.demo.persistence.EmployeeIbatisDao">
+        &lt;property name="sqlMapClient">
+            &lt;ref bean="sqlMapClient"/>
+        &lt;/property>
+    &lt;/bean>
+
+    <span class="standout">&lt;!-- Section 7 --></span>
+    &lt;bean id="employeeService" class="net.reumann.demo.service.EmployeeDaoService">
+        &lt;constructor-arg index="0" ref="employeeDao"/>
+    &lt;/bean>
+
+    &lt;bean id="departmentDao" class="net.reumann.demo.persistence.DepartmentIbatisDao">
+        &lt;property name="sqlMapClient">
+            &lt;ref bean="sqlMapClient"/>
+        &lt;/property>
+    &lt;/bean>
+
+    &lt;bean id="departmentService" class="net.reumann.demo.service.DepartmentDaoService">
+        &lt;constructor-arg index="0" ref="departmentDao"/>
+    &lt;/bean>
+
+
+
+&lt;/beans>
+</code></pre>
+For those new to Spring, this file above will be new so I didn't bother to highlight the whole thing red but I did comment on unique sections which are described in more detail below. Just like your struts-config file is the heart of your struts configuration, this spring.xml file is the heart of our Spring configuration. Fortunately, I think you'll find this spring.xml file pretty easy to follow:
+<p/>
+<ul>
+<li><b>Section 1:</b> Loads our spring.properties for use within this spring.xml file. For simplicity, the spring.properties file was placed directly in src (ends up directly under WEB-INF/classes). If you want to place a properties file elsewhere you'd provide the full path to the file (ie. classpath:net/demo/config/spring.properties ).<p/></li>
+
+<li><b>Section 2:</b> Remember in our struts-config file we declared our mappings with type <code>org.springframework.web.struts.DelegatingActionProxy</code>. The action path in our struts-config file will resolve to the bean name declared in our spring.xml (for example, in this section  /employeeSetUp in our struts-config maps to this /employeeSetUp definition). You'll notice in our definition, statements such as <code>&lt;constructor-arg index="0" ref="employeeService"/></code>. This is telling Spring to inject an "employeeService" reference into our EmployeeAction constructor as the first argument. (departmentService gets injected as the second argument). You'll see these references defined in just a moment. Since we are using 'constructor injection,' our Action class will have to be provided with a constructor to take two arguments. This will be new for many of you, since typically you never need to define a constructor in your Action. At this point you might be wondering "Why in the world do I want to do this?" I think the greatest benefit is the flexibility and loose coupling Spring provides you. For example, think about how easy it is now to simply swap out a service class to be used in your Action. Possibly you want to use some testing service class, which is now a piece of cake. You simply will change the reference to the type of service class you want to use in your spring.xml. Also, you will see that Spring makes it easy to add inject a SqlMapClient that typically you would have to code yourself as a base class (see Section 5). If you are still a bit confused, just hang on until you go through this whole lesson and hopefully things will become more clear.<p/></li>
+
+<li><b>Section 3:</b> Defines our DataSource. It uses the properties we set up in our spring.properties file that is declared in Section 1.<p/></li>
+
+<li><b>Section 4:</b> iBATIS has to be initialized by being setup with a DataSource and a reference to an SqlMap config file. Spring comes with a nice SqlMapClientFactoryBean which is easily defined right here in the spring config file that will generate our SqlMapClient in section 5. This is a much cleaner approach, in my opinion, than having to set up a BaseDao that would typically do this kind of initialization and creation of an SqlMap instance (see iBATIS docs for examples). Notice the reference to the dataSource that we just set up in Section 3.<p/></li>
+
+<li><b>Section 5:</b> If you weren't using Spring, you'd have to create a class that contains your typical base CRUD operations that use an iBATIS SqlMap object. Before using Spring, I'd often make this common class in a BaseDAO that all my DAOs would extend. Spring takes a more flexible approach by providing this SqlMapClient class for us and we'll simply inject that into our DAOs that need to use it (see Section 6).<p/></li>
+
+<li><b>Section 6:</b> The DAO definition that our Service class in Section 7 will use. Notice the DAO is defined with a property that takes a reference to our SqlMapClient defined in Section 4. When you look at the EmployeeIbatisDAO you'll see that extends SqlMapClientTemplate, which is a Spring class, and we are really setting the sqlMapClient property in that base client. (Spring handles both constructor injection and property injection.)<p/></li>
+
+<li><b>Section 7:</b> Our service classes are just another layer between our Action class and our DAOs. I like to use this class since if you need to do any business logic before executing any operations on your DAO, you have a place to do it (removes having to code this business stuff in your Actions). Obviously our Service class will need a DAO though and Spring is set up here to inject our DAO of choice - the one set up in Section 6. The nice thing about using Spring here is that if we wanted to quickly change the type of DAO we were using it would be super easy. We'd just create another DAO reference like in Section 6 and use that reference here. Again, this makes it nice for testing. You can easily create Mock DAO objects and use them if you want during your testing phase. None of your code changes, only this config file needs to be tweaked to inject the correct objects.<p/></li>
+</ul>
+</div>
+
+<div class="sectionHeading">SqlMapConfig.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!DOCTYPE sqlMapConfig
+    PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+    "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+&lt;sqlMapConfig>
+    &lt;settings
+        enhancementEnabled="true"
+        useStatementNamespaces="true"
+        />
+    &lt;sqlMap resource="net/demo/persistence/Employee.xml"/>
+    &lt;sqlMap resource="net/demo/persistence/Department.xml"/>
+&lt;/sqlMapConfig>
+</code></pre>
+The SqlMap config file was declared in our Spring.xml SqlMapClient section. This file is used to declare the location of the various iBATIS sql mapping files that we are to use. There are various settings you could add in the settings section. I definitely like using the 'useStatementNamespaces" set to true. Doing so requires that when you call one of the sql procedures you use the namespace as it's  declared in the file. This will become more clear after you see the sample Employee.xml file in the next section.
+</div>
+
+<div class="sectionHeading">Employee.xml</div>
+<div class="section">
+<pre class="decorated"><code>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+&lt;sqlMap namespace="Employee">
+
+    &lt;typeAlias alias="EmployeeObject" type="net.reumann.demo.vo.Employee"/>
+
+    &lt;cacheModel id="employeesCache" type="MEMORY" readOnly="false" serialize="true">
+        &lt;flushInterval hours="24"/>
+        &lt;flushOnExecute statement="Employee.update"/>
+        &lt;flushOnExecute statement="Employee.insert"/>
+        &lt;flushOnExecute statement="Employee.delete"/>
+    &lt;/cacheModel>
+
+    &lt;resultMap id="employeeResult" class="EmployeeObject">
+        &lt;result property="employeeId" column="employeeid"/>
+        &lt;result property="firstName" column="firstname"/>
+        &lt;result property="lastName" column="lastname"/>
+        &lt;result property="age" column="age"/>
+        &lt;result property="departmentId" column="departmentid"/>
+    &lt;/resultMap>
+
+    &lt;!-- hsql db used for this example capitalizes col names
+         so Map will have them as all caps -->
+    &lt;select id="getAll" resultClass="java.util.HashMap" cacheModel="employeesCache">
+        SELECT
+            employeeid AS EMPLOYEEID,
+            firstname AS FIRSTNAME,
+            lastname AS LASTNAME,
+            AGE,
+            department.departmentid AS DEPTID,
+            department.name AS DEPTNAME
+        FROM employee, department
+        WHERE employee.departmentid = department.departmentid
+    &lt;/select>
+
+    &lt;select id="getById" resultMap="employeeResult" parameterClass="java.lang.Integer">
+        SELECT employeeid, firstname, lastname, age, department.departmentid
+        FROM employee, department
+        WHERE employeeid = #value#
+            AND employee.departmentid = department.departmentid
+    &lt;/select>
+
+    &lt;update id="update" parameterClass="EmployeeObject">
+        UPDATE employee
+        SET
+            firstname = #firstName#,
+            lastname = #lastName#,
+            age = #age#,
+            departmentid = #departmentId#
+        WHERE employeeid = #employeeId#
+    &lt;/update>
+
+    &lt;insert id="insert" parameterClass="EmployeeObject">
+        INSERT INTO employee ( employeeid, firstname, lastname, age, departmentid )
+        VALUES ( null, #firstName#, #lastName#, #age#, #departmentId# )
+    &lt;/insert>
+
+    &lt;delete id="delete" parameterClass="java.lang.Integer">
+        DELETE FROM employee WHERE employeeid = #value#
+    &lt;/delete>
+&lt;/sqlMap>
+</pre></code>
+iBATIS uses xml files to define all the SQL used and maps our SQL result sets to objects. The iBATIS <a href="http://prdownloads.sourceforge.net/ibatisdb/iBATIS-SqlMaps-2.pdf?download">SQL Maps documentation </a> is excellent and you'll need to look it over to understand all the features available. I'll just briefly comment on the file above.
+<p/>
+<ul>
+<li><code>alias="EmployeeObject" type="net.reumann.demo.vo.Employee"</code> Rather than have to type the fully qualified class name (net.reumann.demo.vo.Employee) we've defined an alias "EmployeeObject" and we can use that shorter name in place of the longer class name where needed.<p/></li>
+
+<li>A nice feature of iBATIS is caching. The "employeesCache" definition is defined so that when our "getAll" SQL statement (<code>&lt;select id="getAll" resultClass="java.util.HashMap" cacheModel="employeesCache"></code>) is executed the resulting List is cached by iBATIS and unless we do an insert, update, or delete, iBATIS will fetch the cached List instead of having to make the DB query. It's also set to flush every 24 hours.<p/></li>
+
+<li>If you look at the "getById" section (<code>&lt;select id="getById" resultMap="employeeResult" parameterClass="java.lang.Integer"></code>) you'll notice the "resultMap" reference to 'employeeResult.' iBATIS is very flexible and will automatically populate your POJOs or even a simple HashMap as the "getAll" query does. In this "getById" section we want to get an Employee object returned but the column names don't exactly match up to the Employee object properties so we use a ResultMap to map our column names to the properties in our Employee object.<p/></li>
+
+<li>You'll notice 'parameterClass' used in many of the statements above. Notice we use our alias to our Employee object. The statements will be expecting a type "Employee" passed to our SqlMap and the #...# sections refer to the property names in our Employee object. So for example, in the "update" section, the update SQL is executed and #firstName# will resolve to the firstName property in the Employee object. Some of the parameterClass attributes above are using type Integer, which in those cases, we are passing in an Integer that will be our employeeId. We could have also used our Employee object there instead and grabbed the one Integer employeeId property from the Employeeo object.<p/></li>
+
+</div>
+
+<div class="sectionHeading">Interface EmployeeDao</div>
+<div class="section">
+<pre class="decorated"><code>
+public interface EmployeeDao {
+    public List getAllEmployees();
+    public Employee getEmployee(Integer id);
+    public int update(Employee emp);
+    public Integer insert(Employee emp);
+    public int delete(Integer id);
+}
+</pre></code>
+Always a good idea to code to an Interface. Our EmployeeService class, as you'll soon see, takes an argument of type "EmployeeDao" in the constructor. This is useful since if we decide we wanted Spring to inject a different type of Dao other than an IbatisDao we could do so very easily as long as our other Dao implementation implemented our interface EmployeeDao.
+</div>
+
+<div class="sectionHeading">EmployeeIbatisDao</div>
+<div class="section">
+<pre class="decorated"><code>
+public class EmployeeIbatisDao
+    extends SqlMapClientTemplate implements EmployeeDao {
+
+    Log logger = LogFactory.getLog(this.getClass());
+
+    public List getAllEmployees() {
+        return queryForList("Employee.getAll", null);
+    }
+
+    public Employee getEmployee(Integer id) {
+        return ((Employee)queryForObject("Employee.getById", id));
+    }
+
+    public int update(Employee emp) {
+        return update("Employee.update", emp);
+    }
+
+    public Integer insert(Employee emp) {
+        return (Integer)insert("Employee.insert", emp);
+    }
+
+    public int delete(Integer id) {
+        return delete("Employee.delete", id);
+    }
+}
+</code></pre>
+A typical iBATIS dao. Since we're using Spring we extend SqlMapClientTemplate to have all the nice SqlMap operations (see iBATIS docs) provided for us (queryForObject, queryForList, update, etc). The String arguments in each section correspond to the sql operations we want to run as defined in our Employee.xml file (ie "Employee.getById" calls the 'getById' SQL in the Employee.xml file). Since in our SqlMapConfig.xml we declared <code>useStatementNamespaces="true"</code>, we need to prefix each SQL statement with the name of the namespace as it was declared in the Employee.xml. (The namespace is declared as an attribute in our Employee.xml sqlMap element: <code><sqlMap namespace="Employee"></code>).
+</div>
+
+<div class="sectionHeading">EmployeeService</div>
+<div class="section">
+<pre class="decorated"><code>
+public interface EmployeeService {
+    public List getAllEmployees();
+    public void updateEmployee(Employee emp);
+    public void deleteEmployee(Integer id);
+    public Employee getEmployee(Integer id);
+    public void insertEmployee(Employee emp);
+}
+</code></pre>
+We're good programmers so we declare an Interface for our Service class. If we later needed to change to a different type of EmployeeService implementation, everything will work fine since you will see that our Action class accepts a type "EmpployeeService," as long as our EmployeeService implementations implement this interface we're in good shape.
+</div>
+
+<div class="sectionHeading">EmployeeDaoService</div>
+<div class="section">
+<pre class="decorated"><code>
+public class EmployeeDaoService implements EmployeeService {
+    private EmployeeDao dao;
+
+    public EmployeeDaoService(EmployeeDao dao) {
+        this.dao = dao;
+    }
+
+    public List getAllEmployees() {
+        return dao.getAllEmployees();
+    }
+
+    public void updateEmployee(Employee emp) {
+        dao.update(emp);
+    }
+
+    public void deleteEmployee(Integer id) {
+        dao.delete(id);
+    }
+
+    public Employee getEmployee(Integer id) {
+        return dao.getEmployee(id);
+    }
+
+    public void insertEmployee(Employee emp) {
+        dao.insert(emp);
+    }
+
+}
+</code></pre>
+Here is our EmployeeDaoService that is the implementation we'll be using in this application. If you remember back to the spring.xml file you'll see that our EmployeeAction class is going to be injected with this EmployeeDaoService:
+
+<pre><code>
+&lt;bean name="/employeeSetUp" class="net.reumann.demo.action.EmployeeAction">
+    &lt;constructor-arg index="0" ref="employeeService"/>
+    &lt;constructor-arg index="1" ref="departmentService"/>
+&lt;/bean>
+
+....
+
+&lt;bean id="employeeService" class="net.reumann.demo.service.EmployeeDaoService">
+    &lt;constructor-arg index="0" ref="employeeDao"/>
+&lt;/bean>
+</code></pre>
+You might be wondering why we are even bothering with a Service class when it doesn't do anything but simply call our DAO methods. Why not just use our DAO object directly from the Action class and forget about this whole Service class? The reason I like to have this extra layer is that in a real-life, more complex application, there are often other business operations you might want to perform besides just calling your DAO. For example, maybe when an "update" is done you might need to call some process that sends out an e-mail or some kind of notification. If you don't use a Service class you are stuck now deciding whether to code this business logic in your Action class or in the DAO. Neither of those two <ul><li></li></ul>places is really a good place for that kind of logic - hence we provide an extra service class to handle business rules that shouldn't be in the Action and don't belong in a DAO. Of course for rapid development, you could possibly skip the Service classes and just use the DAOs directly within your Action.
+</div>
+
+<div class="sectionHeading">EmployeeAction</div>
+<div class="section">
+<pre  class="decorated"><code>
+public class EmployeeAction extends DispatchAction {
+    private Log logger = LogFactory.getLog(this.getClass());
+    private EmployeeService empService;
+    private DepartmentService deptService;
+
+    <span class="standout">public EmployeeAction(EmployeeService empService, DepartmentService deptService) {
+        super();
+        this.empService = empService;
+        this.deptService = deptService;
+    }</span>
+
+    public ActionForward getEmployees(ActionMapping mapping,
+        ActionForm form, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
+
+        logger.debug("getEmployees");
+        populateEmployees(request);
+        prep(request);
+        return mapping.findForward(Constants.SUCCESS);
+    }
+
+    public ActionForward setUpForInsertOrUpdate(ActionMapping mapping,
+        ActionForm form, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
+
+        logger.debug("setUpForInsertOrUpdate");
+        EmployeeForm employeeForm = (EmployeeForm)form;
+        if (isUpdate(request, employeeForm)) {
+            Integer id = Integer.valueOf(employeeForm.getEmployeeId());
+            Employee employee = empService.getEmployee(id);
+            BeanUtils.copyProperties(employeeForm, employee);
+        }
+        prep(request);
+        return mapping.findForward(Constants.SUCCESS);
+    }
+
+    public ActionForward delete(ActionMapping mapping,
+        ActionForm form, HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
+
+        logger.debug("delete");
+        EmployeeForm employeeForm = (EmployeeForm)form;
+        Integer id = Integer.valueOf(employeeForm.getEmployeeId());
+        empService.deleteEmployee(id);
+        populateEmployees(request);
+        return mapping.findForward(Constants.SUCCESS);
+    }
+
+    public ActionForward insertOrUpdate(ActionMapping mapping,
+        ActionForm form,
+        HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        logger.debug("insertOrUpdate");
+        EmployeeForm employeeForm = (EmployeeForm)form;
+        <span class="standout">if (validationSuccessful(request, employeeForm)) {</span>
+            Employee employee = new Employee();
+            BeanUtils.copyProperties(employee, employeeForm);
+            if (isUpdate(request, employeeForm)) {
+                empService.updateEmployee(employee);
+            } else {
+                empService.insertEmployee(employee);
+            }
+            populateEmployees(request);
+            return mapping.findForward(Constants.SUCCESS);
+        } else {
+            prep(request);
+            return mapping.findForward(Constants.FAILURE);
+        }
+    }
+
+    private void populateEmployees(HttpServletRequest request) {
+        List employees = empService.getAllEmployees();
+        request.setAttribute(Constants.EMPLOYEES, employees);
+    }
+
+    <span class="standout">private void prep(HttpServletRequest request) {
+        request.setAttribute(Constants.DEPARTMENTS,
+            deptService.getAllDepartments());
+    }</span>
+
+    private boolean isUpdate(HttpServletRequest request,
+        EmployeeForm empForm) {
+        boolean updateFlag = true;
+        String id = empForm.getEmployeeId();
+        if (id == null || id.trim().length() == 0 ||
+            Integer.parseInt(id) == 0) {
+            updateFlag = false;
+        }
+        return updateFlag;
+    }
+
+    <span class="standout">private boolean validationSuccessful(
+        HttpServletRequest request, EmployeeForm form) {</span>
+        boolean isOk = true;
+        ActionMessages errors = new ActionMessages();
+        if (form.getAge() == null || form.getAge().trim().length() == 0) {
+            errors.add("age", new ActionMessage("errors.required", "Age"));
+        } else {
+            try {
+                Integer.parseInt(form.getAge());
+            } catch (NumberFormatException e) {
+                errors.add("age", new ActionMessage("errors.number", "Age"));
+            }
+        }
+        if (form.getFirstName() == null ||
+            form.getFirstName().trim().length() == 0) {
+            errors.add("firstName",
+                new ActionMessage("errors.required", "First Name"));
+        }
+        if (form.getLastName() == null ||
+        form.getLastName().trim().length() == 0) {
+            errors.add("lastName",
+            new ActionMessage("errors.required", "Last Name"));
+        }
+        if (!errors.isEmpty()) {
+            saveErrors(request, errors);
+            isOk = false;
+        }
+        return isOk;
+    }
+}
+</code></pre>
+I like using standard DispatchActions. Using a DispatchAction you can keep related functionality in one class. This class is our 'controller' for our Employee related tasks.</br>
+<ul>
+<li>A constructor is provided for this class so that Spring can inject the two Service classes. (If you don't want to use constructor injection, you could have Spring set the employeeService and departmentService using property injection.)<p/></li>
+
+<li>I prefer to call validation manually in my Action class. The main reason for this is it allows me to never have that annoying problem of Lists not being in scope on my form if validation fails (Full article on this <a href="validate-manually.do">here</a>. Notice how <code>if (validationSuccessful(request, employeeForm))</code> returns false the "prep(request)" method is called. In this example prep makes sure to put my Departments list in Request scope. Of course if you were certain that the list of departments was never going to change you could use Application scope, in which case you could set that list in scope somewhere else, but I'm simply demonstrating here how to easily make sure your Lists stay in Request scope even when validation fails. (Session would also work, but I think the Session is a bad place to store form Lists - you're basically adding extra overhead for no gain.)<p/>
+If you want to use the validation framework and configure your validation rules in an xml file you could still use the approach above where you manually call validate. Thus the validationSuccessful method could be shortened to:<p/>
+
+<pre><code>
+private boolean validationSuccessful(HttpServletRequest request,
+EmployeeForm form) {
+    ActionMessages errors =  form.validate();
+    if (!errors.isEmpty()) {
+        saveErrors(request, errors);
+        return false;
+    } else {
+      return true;
+    }
+}
+</code></pre>
+I tend to not use the validation framework to handle my validation because inevitably I end up with some complex validation that isn't easily handled by an xml configuration, so since I end up having to write up some validation code, I find it easier to have all of it one place versus some in a config file and some custom in a validation method. If you validation needs are definitely going to be simple, I'd use the validation framework and call the forms validate method manually as just described.
+</div>
+
+<div class="sectionHeading">Other Files</div>
+<div class="section">
+Nothing really exciting about the other files. They should all be self-explanatory.
+</div>
+<div class="author">Code and Lesson - Rick Reumann</div>
