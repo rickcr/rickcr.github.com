@@ -63,7 +63,7 @@ public class ExecutionsVM {
 
 ##The zul
  
-{% highlight java %}
+{% highlight xml %}
 <paging id="executionsPaging"
   onCreate="executionsList.setPaginal(self)"
   totalSize="@bind(vm.executionsTotalSize)"
@@ -80,7 +80,7 @@ public class ExecutionsVM {
 
 ##Execution Service
 
-{% highlight text %}
+{% highlight java %}
 @Service
 public class ExecutionService {
 	@Resource
