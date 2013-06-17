@@ -227,10 +227,12 @@ color: #000000;
 background: #dbdbdb;
 color: #990066;
 }
+/*
 code {
     font-family:new-courier,courier,serif;
     color: navy; 
 }
+*/
 pre.textmate-source {
 	margin: 0;
 	padding: 0 0 0 2px;
