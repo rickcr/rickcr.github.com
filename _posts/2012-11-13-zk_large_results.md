@@ -2,7 +2,6 @@
 title: ZK Paging Large Results
 layout: article
 ---
-#Introduction
 One thing typically needed in any sort of web application is way to paginate a large list of data. On top of pagination, you also need a way to sort the data (typically be clicking a column header.) For small amounts of data the solution is always pretty simple, but when dealing with a large amount of data, it's a bit trickier since you rrarely want to pull back all the data at once and store it in memory.</p>
  
 In regard to pagination large amounts of data in ZK, there are some solutions floating around out there. I found this solution proposed
