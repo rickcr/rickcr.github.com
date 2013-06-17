@@ -22,11 +22,7 @@ NOTE: At the time of this writing, one of my complaints is that ZK now allows an
  
 Anyway, here is what I came up with. For now I'm just showing the relevant code.  I think it'll make sense without a downloadable example.
  
- 
-The plan was for this to become a nice walk-through tutorial/lesson. Hopefully I'll get around to it. In the meantime, I think many will be able to get a lot out of this sample application. If there are things wrong with it, please let me know by e-mail. If you are new to JSF (as I am at the moment), please ask general JSF/MyFaces questions on the MyFaces mailing list. Unfortunately, I don't have a lot of time right now to answer JSF/MyFaces specific questions, plus you are better off getting answers from those much more knowledgable than myself.
- 
-*NOTE:* I illustate the below better, with more source code, here on my blog: <a href="http://reumann.blogspot.com/2013/05/zk-paginating-large-results-sets-in-zk.html">http://reumann.blogspot.com/2013/05/zk-paginating-large-results-sets-in-zk.html</a>.
- 
+  
 
 ##The View Model
  
