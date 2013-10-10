@@ -17,7 +17,7 @@ NOTE: At the time of this writing, one of my complaints is that ZK now allows an
  I want within my ViewModel directly. I'm sure this isn't the "pure" approach, and it certainly means the ViewModel has to know a bit more than it should about 
  the UI, but I find it working for me and it certainly means the ViewModel has to know a bit more than it should about the UI. (Possible a SelectComposer would
  be better, but that has its own issues when you need to notify it from a ViewModel - having to listen on queue vs just listening for a GlobalCommand? Clean up 
- issues then arise using listeners on queues.) 
+ issues then arise using listeners on queues.)
  
 
 
