@@ -2,14 +2,15 @@
 title: ZK Paging Large Results
 layout: article
 ---
-One thing typically needed in any sort of web application is way to paginate a large list of data. On top of pagination, you also need a way to sort the data (typically be clicking a column header.) For small amounts of data the solution is always pretty simple, but when dealing with a large amount of data, it's a bit trickier since you rrarely want to pull back all the data at once and store it in memory.</p>
- 
-In regard to pagination large amounts of data in ZK, there are some solutions floating around out there. I found this solution proposed
-<a href="http://books.zkoss.org/wiki/Small_Talks/2012/March/Handling_a_Trillion_Data_Using_ZK">http://books.zkoss.org/wiki/Small_Talks/2012/March/Handling_a_Trillion_Data_Using_ZK</a> but I couldn't really figure it out and, unless I'm missing something, it requires ALL your data to be stored server side (someone correct me if I'm wrong there?)  This seems sort of expensive. Most people are using something like Hibernate or MyBaitis (my choice) and I don't think it's worth populating EVERY object up front.    
- 
- 
-Another approach found here <a href="http://books.zkoss.org/wiki/Small_Talks/2009/May/Paging_Sorting_with_a_filter_object">http://books.zkoss.org/wiki/Small_Talks/2009/May/Paging_Sorting_with_a_filter_object</a> is interesting as well but it confused me, since I started most of my learning of ZK recently with an MVVM approach and not dealing with the older controller based approach. This other approach is more like what I'm doing below <a href="http://books.zkoss.org/wiki/Small_Talks/2009/July/Handling_huge_data_using_ZK">http://books.zkoss.org/wiki/Small_Talks/2009/July/Handling_huge_data_using_ZK</a>, but I'm doing it all in my ViewModel. I'm sure purists won't like it but it seems like an easier approach than most of the other ones I've seen.
- 
+Update 10/3/2013 - When I originally wrote this, the pagination examples using servers-side sorting (without pulling everything back where sort of weak.)
+There is now this post however <a href="http://fadishei.wordpress.com/2012/03/22/zk-mvvm-design-pattern-and-server-side-paging/">http://fadishei.wordpress.com/2012/03/22/zk-mvvm-design-pattern-and-server-side-paging/</a>
+which is similar to the approach I initially had demonstrated here. My initial approach was handling the onPaging event and it worked well,
+but the approach in the above link is slightly cleaner since you don't need the onPaging
+declaration event in your zul and instead you handle things in setActivePage. So I've now updated this example.
+ It's really illustrating the same thing as the link above, but having
+two links out there with the same approach is not a bad thing:) This example shows a bit more of the MyBatis code as well, but that's not super critical. I also
+use a 'searchFilter' since in my real code that I'm using I send a lot more to the cut back than just the start/end rows (eg search by name, etc.)
+
 NOTE: At the time of this writing, one of my complaints is that ZK now allows an MVVM approach, which I love, but when you view forum posts
  or google solutions they are often using an older approach and trying to mix the two isn't as simple as I would like (probably mostly due to my ignorance.)
  I do wish someone would write some best practice documents of how to blend the two.  What I've ended up deciding to do in most cases, is to just do the things 
@@ -18,10 +19,7 @@ NOTE: At the time of this writing, one of my complaints is that ZK now allows an
  be better, but that has its own issues when you need to notify it from a ViewModel - having to listen on queue vs just listening for a GlobalCommand? Clean up 
  issues then arise using listeners on queues.) 
  
- 
-Anyway, here is what I came up with. For now I'm just showing the relevant code.  I think it'll make sense without a downloadable example.
- 
-  
+
 
 ##The View Model
  
@@ -29,32 +27,38 @@ Anyway, here is what I came up with. For now I'm just showing the relevant code.
 public class ExecutionsVM {
 	private final static Logger logger = LoggerFactory.getLogger(ExecutionsVM.class);
 	
-	private List<execution> executions = new ArrayList<execution>();
 	private ExecutionSearchFilter searchFilter = new ExecutionSearchFilter();
 	private long executionsTotalSize = 0l;
 	private int executionsPageSize = 25;
-	private int currentPageNumber = 0;
+	private int activePage = 0;
 	
 	@WireVariable
 	private ExecutionService executionService;
-	
+
 	@NotifyChange({"executions","executionsTotalSize"})
-	@Command
-	public void pageExecutions(@BindingParam("pageNum") int pageNum) {
-		logger.debug("pageExecutions for pagNum {}", pageNum);
-		this.currentPageNumber = pageNum;
+	public void setActivePage(int activePage)  {
+		this.activePage = activePage;
 		populateSearchFilter();
-		executions = executionService.getExecutions(searchFilter);
-		executionsTotalSize = executionService.getExecutionsSize(searchFilter);
 	}
 
 	private void populateSearchFilter() {
-		int base = this.currentPageNumber * executionsPageSize;
+		int base = activePage * executionsPageSize;
 		int firstRow = base + 1;
 		int lastRow = base + executionsPageSize;
 		searchFilter.setLowerRowLimit(firstRow);
 		searchFilter.setUpperRowLimit(lastRow);
 	}
+
+	public List<Execution> getExecutions() {
+		return executionService.getExecutions(searchFilter);
+	}
+
+	public int getExecutionsTotalSize() {
+	 	executionsTotalSize = executionService.getExecutionsSize(searchFilter);
+	}
+
+	//obvious other getters and setters not shown
+	//getActivePage, etc
 
 }
 {% endhighlight %}
@@ -67,8 +71,7 @@ public class ExecutionsVM {
   onCreate="executionsList.setPaginal(self)"
   totalSize="@bind(vm.executionsTotalSize)"
   pageSize="@bind(vm.executionsPageSize)"
-  activePage="@bind(vm.currentPageNumber)"
-  onPaging="@command('pageExecutions', pageNum=event.activePage)"
+  activePage="@bind(vm.activePage)"
   /> 
 
 
