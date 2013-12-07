@@ -2,17 +2,20 @@
 title: Jersey REST Web Services
 layout: article
 ---
-Jersey https://jersey.java.net/ is really awesome, however as a newbie to using it I found the documentation absolutely horrible.
+Jersey <a href="https://jersey.java.net/">https://jersey.java.net/</a> is really awesome, however as a newbie to using it I found the documentation absolutely horrible.
 A beginner is typically going to want to be handle typical CRUD actions using Java objects and it's extremely vague, at best, on
 how to implement this.
 
 What makes matters worse is when you start searching for examples, you end up getting a lot of Jersey 1.x examples and the API apparently
 has changed quite a bit for 2.x (which this article covers.)
 
-The full blown example you can access here https://github.com/rickcr/rick-jersey. Build with Maven using -DskipTests=true then deploy the war file to your
+The full blown example you can access here <a href="https://github.com/rickcr/rick-jersey">https://github.com/rickcr/rick-jersey</a>. Build with Maven using -DskipTests=true then deploy the war file to your
 server of choice (I've tested with Tomcat 6.) Once the server war is deployed you can run the tests in the rick-jersey-client PersonTest class.
 
 Below I've listed the two relevant portions of code, the server side jersey class and the client side code accessing the Jersey endpoints:
+
+<div style="padding:4px;border:1px solid black;">
+<b>PersonWS.java</b>
 
 {% highlight java %}
 import net.learntechnology.domain.Person;
@@ -64,9 +67,12 @@ public class PersonWS {
 
 }
 {% endhighlight %}
-
+</div>
 
 The client side code access the endpoints above:
+
+<div style="padding:4px;border:1px solid black;">
+<b>PersonTest.java</b>
 
 {% highlight java %}
 import net.learntechnology.domain.Person;
@@ -123,3 +129,4 @@ public class PersonTest {
 
 }
 {% endhighlight %}
+</div>
