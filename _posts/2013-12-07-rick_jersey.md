@@ -129,9 +129,12 @@ public class PersonTest {
 
 }
 {% endhighlight %}
+</div>
 
+The Person value object. JAXB Annotated
 
-<b>Person value object</b>
+<div style="padding:4px;border:1px solid black;">
+<b>Person.java</b>
 
 {% highlight java %}
 import javax.xml.bind.annotation.XmlAccessType;
