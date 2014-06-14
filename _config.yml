@@ -1,7 +1,7 @@
 name: learntechnology.net
 pygments: true
 #   permalink: title 
-# markdown: redcarpet
+markdown: kramdown
 #relative_permalinks: false 
 #
 
