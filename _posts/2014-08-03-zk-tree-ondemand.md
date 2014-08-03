@@ -3,7 +3,10 @@ title: ZK Tree - Render/Load On Demand
 layout: article
 ---
 
-ZK Tree Load on Demand, Render on Demand following Bai Ben's approach 
+Source code:
+zk-tree-ondemand <a href="https://github.com/rickcr/zk-tree-ondemand">https://github.com/rickcr/zk-tree-ondemand</a>
+
+This ZK Tree Load on Demand, Render on Demand uses Bai Ben's core classes: 
 <a href="http://ben-bai.blogspot.com/2013/01/zk-tree-rod-and-load-on-demand.html">http://ben-bai.blogspot.com/2013/01/zk-tree-rod-and-load-on-demand.html</a>
 
 RODTreeModel, RODTreeNode, and RODTreeNodeData are core classes that you can reuse across ZK projects.
