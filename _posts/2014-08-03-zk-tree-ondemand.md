@@ -3,7 +3,8 @@ title: ZK Tree - Render/Load On Demand
 layout: article
 ---
 
-ZK Tree Load on Demand, Render on Demand following Bai Ben's approach http://ben-bai.blogspot.com/2013/01/zk-tree-rod-and-load-on-demand.html
+ZK Tree Load on Demand, Render on Demand following Bai Ben's approach 
+<a href="http://ben-bai.blogspot.com/2013/01/zk-tree-rod-and-load-on-demand.html">http://ben-bai.blogspot.com/2013/01/zk-tree-rod-and-load-on-demand.html</a>
 
 RODTreeModel, RODTreeNode, and RODTreeNodeData are core classes that you can reuse across ZK projects.
 I won't go over those core objects here - see link above.
