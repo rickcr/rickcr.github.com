@@ -13,7 +13,8 @@ The drawback (minor) is that, yes, you still need to create a place-holder mappe
 
 The benefit is that if you follow the convention of naming the mapper methods to match the GenericCrudMapper, you typically are only writing the SQL, and the Java side becomes simple.
 
-Note, I also created a GenericCrudService class. If you follow any of my other tutorials you'll realize that I do prefer to have my Mappers used within a service class. This is just my preference and not required.  I've found in the 'real world' that I often need to do more stuff around my basic CRUD operations so that using the Mapper within a Service class gives me an extra layer to shield the client - typically the UI - from having to handle the other needed business logic around the CRUD operation.
+Note, I also created a GenericCrudService class. If you follow any of my other tutorials you'll realize that I do prefer to have my Mappers used within a service class. This is just my preference and not required.  I've found in the 'real world' that I often need to do more stuff around my basic CRUD operations so that using the Mapper within a Service class gives me an extra layer to shield the client - typically the UI - from having to handle the other needed business logic around the CRUD operations.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
 To test this application, you should just be able to run "mvn clean install" or you can typically right click on the tests in your IDE and run them there.
 
 
