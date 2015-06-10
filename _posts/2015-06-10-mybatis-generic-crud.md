@@ -27,13 +27,13 @@ To test this application, you should just be able to run "mvn clean install" or 
 The GenericCrudMapper looks like:
 
 {% highlight java %}
-	public interface GenericCrudMapper<T, PK> {
-		Object fetchById(PK id);
-		List<T> fetch(@Param("searchCriteria") SearchCriteria searchCriteria);
-		void insert(T o);
-		void update(T o);
-		void delete(T o);
-	}
+public interface GenericCrudMapper<T, PK> {
+	Object fetchById(PK id);
+	List<T> fetch(@Param("searchCriteria") SearchCriteria searchCriteria);
+	void insert(T o);
+	void update(T o);
+	void delete(T o);
+}
 {% endhighlight %}
 
 SearchCriteria is just a marker interface. I found in many of my apps the client wants to filter back by various conditions. In this case you'd make an implementation
@@ -43,59 +43,59 @@ SearchCriteria is just a marker interface. I found in many of my apps the client
  To make an insatnce of a GenericCrudMapper just extend it passing in the proper type:
  
 {% highlight java %}
-	 public interface EmployeeMapper extends GenericCrudMapper<Employee, Long> {
-	 }
+public interface EmployeeMapper extends GenericCrudMapper<Employee, Long> {
+}
 {% endhighlight %}
  
 The GenericCrudService looks like:
 
 {% highlight java %}
-	 public abstract class GenericCrudService<T, PK> {
-	 
-		protected GenericCrudMapper mapper;
-	 
-		public GenericCrudService(GenericCrudMapper mapper) {
-			this.mapper = mapper;
-		}
-	 
-		public T fetch(PK id) {
-			return (T)mapper.fetchById(id);
-		}
-	 
-		public List<T> fetchAll() {
-			return mapper.fetch(null);
-		}
-	 
-		public List<T> fetch(SearchCriteria searchCriteria) {
-			return mapper.fetch(searchCriteria);
-		}
-	 
-		public void insert(T o) {
-			mapper.insert(o);
-		}
-	 
-		public void update(T o) {
-			mapper.update(o);
-		}
-	 
-		public void delete(T o) {
-			mapper.delete(o);
-		}
-	 
-	 }
+public abstract class GenericCrudService<T, PK> {
+
+	protected GenericCrudMapper mapper;
+	
+	public GenericCrudService(GenericCrudMapper mapper) {
+		this.mapper = mapper;
+	}
+	
+	public T fetch(PK id) {
+		return (T)mapper.fetchById(id);
+	}
+	
+	public List<T> fetchAll() {
+		return mapper.fetch(null);
+	}
+	
+	public List<T> fetch(SearchCriteria searchCriteria) {
+		return mapper.fetch(searchCriteria);
+	}
+	
+	public void insert(T o) {
+		mapper.insert(o);
+	}
+	
+	public void update(T o) {
+		mapper.update(o);
+	}
+	
+	public void delete(T o) {
+		mapper.delete(o);
+	}
+
+}
 {% endhighlight %}
  
 An implementation of this class requires you to pass it the proper Mapper to use (NOTE: someone let me know if there is a better way to do this?)
  
 {% highlight java %} 
-	 @Service
-	 public class EmployeeService extends GenericCrudService<Employee, Long> {
- 
-		 @Autowired
-		 public EmployeeService(EmployeeMapper mapper) {
-			 super(mapper);
-		 }
-	 }
+@Service
+public class EmployeeService extends GenericCrudService<Employee, Long> {
+	
+	@Autowired
+	public EmployeeService(EmployeeMapper mapper) {
+		super(mapper);
+	}
+}
 {% endhighlight %}
 
 That's about it. You can start out using the GenericCrudMapper/Service and then if you have a case where one of your methods is different just override it, or 
