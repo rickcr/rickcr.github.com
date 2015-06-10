@@ -2,7 +2,9 @@
 title: MyBATIS - Generic Crud
 layout: article
 ---
- 
+
+Source code/sample project: <a href="https://github.com/rickcr/mybatis-generic-crud">https://github.com/rickcr/mybatis-generic-crud</a>
+
 Many times your application consists of doing common CRUD type operations (Create, Read, Upadte, Delete.)
 
 This is just one 'partially gneric' way to handle these common things. I say 'partially' since I've seen other approaches, such as having 
