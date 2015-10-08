@@ -60,6 +60,7 @@ In order to disable having right-click trigger the row selection, add the follow
  
  or if you want it global, in your zk.xml file add:
 
+{% highlight xml %}
 <library-property>
 	<name>org.zkoss.zul.listbox.rightSelect</name>
 	<value>false</value>
