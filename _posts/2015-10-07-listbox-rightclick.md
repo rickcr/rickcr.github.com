@@ -52,9 +52,14 @@ The ZK listbox relevant info:
 			onRightClick="@command('getExecMenuPopup', target=event.target, execution=item)">
 {% endhighlight %}
 
-In order to disable having right-click trigger the row selection, add the following to your zk.xml file:
+In order to disable having right-click trigger the row selection, add the following somewhere on the page before your listbox
 
 {% highlight xml %}
+<custom-attributes org.zkoss.zul.listbox.rightSelect="false"/>
+{% endhighlight %}
+ 
+ or if you want it global, in your zk.xml file add:
+
 <library-property>
 	<name>org.zkoss.zul.listbox.rightSelect</name>
 	<value>false</value>
