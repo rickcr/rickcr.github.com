@@ -15,6 +15,8 @@ very outdated. Be sure to check approriate web sites for updated information con
 <div class="section">
 Feel free to contact me with any mistakes you find in any of the lessons or articles (spelling, grammar, or content.) 
 Also, if you have worked on a good lesson or example application and want to have it posted, let me know as well.
+<br/><br/>
+Maddi Rocks!
 </div>
 
 <div class="sectionHeading">Articles (most recent listed first)</div>
