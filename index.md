@@ -11,12 +11,14 @@ One of the unique things about this site is that you'll notice several "CRUD" ap
 As the site grows, more different technologies will be added. Since technology moves so quickly, many of the examples here will be 
 very outdated. Be sure to check approriate web sites for updated information concerning the technology you are investigating.  
 
+<br/><br/>
+(Note: Maddi Rocks!)
+<br/><br/>
+
 <div class="sectionHeading">How you can help</div>
 <div class="section">
 Feel free to contact me with any mistakes you find in any of the lessons or articles (spelling, grammar, or content.) 
 Also, if you have worked on a good lesson or example application and want to have it posted, let me know as well.
-<br/><br/>
-Maddi Rocks!
 </div>
 
 <div class="sectionHeading">Articles (most recent listed first)</div>
