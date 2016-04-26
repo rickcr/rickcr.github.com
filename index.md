@@ -12,7 +12,7 @@ As the site grows, more different technologies will be added. Since technology m
 very outdated. Be sure to check approriate web sites for updated information concerning the technology you are investigating.  
 <br/><br/>
 (Note: Maddi Rocks!)
- 
+ <br/><br/>
 </div>
  
 
