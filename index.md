@@ -10,9 +10,6 @@ One of the unique things about this site is that you'll notice several "CRUD" ap
 <br/><br/> 
 As the site grows, more different technologies will be added. Since technology moves so quickly, many of the examples here will be 
 very outdated. Be sure to check approriate web sites for updated information concerning the technology you are investigating.  
-<br/><br/>
-Note: Maddi Rocks!
-</div>
 
 <div class="sectionHeading">How you can help</div>
 <div class="section">
