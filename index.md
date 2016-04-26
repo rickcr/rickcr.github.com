@@ -13,7 +13,6 @@ very outdated. Be sure to check approriate web sites for updated information con
 <br/><br/>
 Note: Maddi Rocks!
 </div>
- 
 
 <div class="sectionHeading">How you can help</div>
 <div class="section">
